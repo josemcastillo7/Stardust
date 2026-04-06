@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+<head th:replace="~{layout :: head('Forum Index')}"></head>
+<body>
+<div th:replace="~{header :: header}"></div>
+<div class="container mt-4">
+    <h2 th:text="${siteName} + ' - Forum Index'">Schooner - Forum Index</h2>
+    <p th:text="${siteDescription}">a schooner forum</p>
+    <hr/>
+    <div class="list-group subforum-list">
+        <a th:each="sf : ${subforums}"
+           th:href="@{/subforum(sub=${sf.id})}"
+           class="list-group-item list-group-item-action"
+           th:unless="${sf.hidden}">
+            <div class="d-flex justify-content-between">
+                <h5 class="mb-1" th:text="${sf.title}">Subforum Title</h5>
+            </div>
+            <p class="mb-1 text-muted" th:text="${sf.description}">Description</p>
+        </a>
+    </div>
+</div>
+</body>
+</html>

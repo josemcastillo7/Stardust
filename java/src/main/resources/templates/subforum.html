@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+<head th:replace="~{layout :: head(${subforum.title})}"></head>
+<body>
+<div th:replace="~{header :: header}"></div>
+<div class="container mt-4">
+    <h2 th:text="${subforum.title}">Subforum</h2>
+    <p th:text="${subforum.description}">Description</p>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><span th:utext="${breadcrumb}">path</span></li>
+        </ol>
+    </nav>
+    <div th:if="${!children.isEmpty()}">
+        <h5>Subforums</h5>
+        <div class="list-group subforum-list mb-3">
+            <a th:each="child : ${children}"
+               th:href="@{/subforum(sub=${child.id})}"
+               class="list-group-item list-group-item-action"
+               th:unless="${child.hidden}">
+                <strong th:text="${child.title}">Child Forum</strong>
+                <span class="text-muted ml-2" th:text="${child.description}">desc</span>
+            </a>
+        </div>
+    </div>
+    <h5>Posts</h5>
+    <div sec:authorize="isAuthenticated()" class="mb-2">
+        <a th:href="@{/addpost(sub=${subforum.id})}" class="btn btn-primary btn-sm">Create Post</a>
+    </div>
+    <div class="list-group post-list">
+        <a th:each="post : ${posts}"
+           th:href="@{/viewpost(post=${post.id})}"
+           class="list-group-item list-group-item-action">
+            <div class="d-flex justify-content-between">
+                <strong th:text="${post.title}">Post Title</strong>
+                <small class="text-muted">
+                    <span th:text="${post.timeString}">time</span>
+                    by <span th:text="${post.user.username}">author</span>
+                </small>
+            </div>
+        </a>
+    </div>
+    <div th:if="${posts.isEmpty()}" class="text-muted mt-2">No posts yet.</div>
+</div>
+</body>
+</html>

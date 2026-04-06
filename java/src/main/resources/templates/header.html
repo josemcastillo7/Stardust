@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+<body>
+<nav th:fragment="header" class="navbar navbar-dark forum-header">
+    <div class="container">
+        <a class="navbar-brand" th:href="@{/}" th:text="${siteName}">Schooner</a>
+        <div class="navbar-nav flex-row">
+            <a class="nav-link text-white mr-3" th:href="@{/}">Subforum Index</a>
+            <span sec:authorize="isAuthenticated()">
+                <span class="text-white mr-2" th:text="'Hello, ' + ${currentUser}">Hello, user</span>
+                <form th:action="@{/action_logout}" method="post" class="d-inline">
+                    <button type="submit" class="btn btn-link nav-link text-white d-inline p-0">Logout</button>
+                </form>
+            </span>
+            <span sec:authorize="!isAuthenticated()">
+                <a class="nav-link text-white d-inline" th:href="@{/loginform}">Login / Register</a>
+            </span>
+        </div>
+    </div>
+</nav>
+</body>
+</html>

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+<head th:replace="~{layout :: head(${post.title})}"></head>
+<body>
+<div th:replace="~{header :: header}"></div>
+<div class="container mt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><span th:utext="${breadcrumb}">path</span></li>
+        </ol>
+    </nav>
+    <h2 th:text="${post.title}">Post Title</h2>
+    <p class="text-muted">
+        Posted by <strong th:text="${post.user.username}">author</strong>
+        &mdash; <span th:text="${post.timeString}">time</span>
+    </p>
+    <div class="card mb-4">
+        <div class="card-body" th:text="${post.content}">Content here</div>
+    </div>
+    <h5>Comments (<span th:text="${#lists.size(comments)}">0</span>)</h5>
+    <div th:each="comment : ${comments}" class="comment-block">
+        <p th:text="${comment.content}">Comment content</p>
+        <small class="text-muted">
+            by <strong th:text="${comment.user.username}">author</strong>
+            &mdash; <span th:text="${comment.timeString}">time</span>
+        </small>
+    </div>
+    <div th:if="${comments.isEmpty()}" class="text-muted">No comments yet.</div>
+    <div sec:authorize="isAuthenticated()" class="mt-4">
+        <h5>Add a Comment</h5>
+        <form th:action="@{/action_comment(post=${post.id})}" method="post">
+            <div class="form-group">
+                <textarea name="content" class="form-control" rows="4" required
+                          placeholder="Write your comment here..."></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit Comment</button>
+        </form>
+    </div>
+    <div sec:authorize="!isAuthenticated()" class="mt-4 text-muted">
+        <a th:href="@{/loginform}">Login</a> to post a comment.
+    </div>
+</div>
+</body>
+</html>
