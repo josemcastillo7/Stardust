@@ -1,8 +1,10 @@
 package com.zipcode.stardust.repository;
 
-import com.zipcode.stardust.model.User;
-import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.zipcode.stardust.model.User;
 
 public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByUsername(String username);
