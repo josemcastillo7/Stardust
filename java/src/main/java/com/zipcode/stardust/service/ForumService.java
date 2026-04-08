@@ -1,10 +1,7 @@
 package com.zipcode.stardust.service;
 
-import com.zipcode.stardust.model.Subforum;
-import com.zipcode.stardust.model.UserProfile;
-import com.zipcode.stardust.model.User;
-import com.zipcode.stardust.repository.SubforumRepository;
-import com.zipcode.stardust.repository.UserRepository;
+import java.util.Optional;
+
 import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
@@ -14,7 +11,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.HtmlUtils;
 
-import java.util.Optional;
+import com.zipcode.stardust.model.Subforum;
+import com.zipcode.stardust.model.User;
+import com.zipcode.stardust.model.UserProfile;
+import com.zipcode.stardust.repository.SubforumRepository;
+import com.zipcode.stardust.repository.UserProfileRepository;
+import com.zipcode.stardust.repository.UserRepository;
 
 @Service
 public class ForumService {
@@ -24,6 +26,9 @@ public class ForumService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private UserProfileRepository userProfileRepository;
 
     // Markdown rendering pipeline — thread-safe singletons
     private final Parser mdParser = Parser.builder().build();
@@ -106,5 +111,4 @@ public class ForumService {
         profile.setBio(bio);
         return userProfileRepository.save(profile);
     }
-
 }
