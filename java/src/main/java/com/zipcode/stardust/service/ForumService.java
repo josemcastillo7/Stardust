@@ -1,6 +1,8 @@
 package com.zipcode.stardust.service;
 
 import com.zipcode.stardust.model.Subforum;
+import com.zipcode.stardust.model.UserProfile;
+import com.zipcode.stardust.model.User;
 import com.zipcode.stardust.repository.SubforumRepository;
 import com.zipcode.stardust.repository.UserRepository;
 import org.commonmark.node.Node;
@@ -88,4 +90,21 @@ public class ForumService {
     public boolean emailTaken(String email) {
         return userRepository.existsByEmail(email);
     }
+
+    // ADD 2 - UserProfile methods
+    public UserProfile getUserProfile(User user) {
+        return userProfileRepository.findByUser(user);
+    }
+
+    public UserProfile createUserProfile(User user) {
+        UserProfile profile = new UserProfile(user);
+        return userProfileRepository.save(profile);
+    }
+
+    public UserProfile updateBio(User user, String bio) {
+        UserProfile profile = userProfileRepository.findByUser(user);
+        profile.setBio(bio);
+        return userProfileRepository.save(profile);
+    }
+
 }
