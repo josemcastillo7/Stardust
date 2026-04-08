@@ -72,28 +72,20 @@ public class Message {
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
-
     public User getSender() { return sender; }
     public void setSender(User sender) { this.sender = sender; }
-
     public User getRecipient() { return recipient; }
     public void setRecipient(User recipient) { this.recipient = recipient; }
-
     public String getSubject() { return subject; }
     public void setSubject(String subject) { this.subject = subject; }
-
     public String getContent() { return content; }
     public void setContent(String content) { this.content = content; }
-
     public LocalDateTime getSentAt() { return sentAt; }
     public void setSentAt(LocalDateTime sentAt) { this.sentAt = sentAt; }
-
     public boolean isRead() { return read; }
     public void setRead(boolean read) { this.read = read; }
-
     public boolean isDeletedBySender() { return deletedBySender; }
     public void setDeletedBySender(boolean v) { this.deletedBySender = v; }
-    
     public boolean isDeletedByRecipient() { return deletedByRecipient; }
     public void setDeletedByRecipient(boolean v) { this.deletedByRecipient = v; }
 }
