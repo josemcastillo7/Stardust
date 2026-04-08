@@ -12,7 +12,9 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Controller
@@ -170,8 +172,14 @@ public class ForumController {
         Post p = opt.get();
         List<Comment> comments = commentRepository.findByPostOrderByPostdateAsc(p);
         String breadcrumb = forumService.generateLinkPath(p.getSubforum().getId());
+        Map<Long, String> commentContents = new LinkedHashMap<>();
+        for (Comment c : comments) {
+            commentContents.put(c.getId(), forumService.renderMarkdown(c.getContent()));
+        }
         model.addAttribute("post", p);
+        model.addAttribute("postContent", forumService.renderMarkdown(p.getContent()));
         model.addAttribute("comments", comments);
+        model.addAttribute("commentContents", commentContents);
         model.addAttribute("breadcrumb", breadcrumb);
         model.addAttribute("errors", new ArrayList<>());
         return "viewpost";

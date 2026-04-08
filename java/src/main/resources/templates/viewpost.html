@@ -16,11 +16,11 @@
         &mdash; <span th:text="${post.timeString}">time</span>
     </p>
     <div class="card mb-4">
-        <div class="card-body" th:text="${post.content}">Content here</div>
+        <div class="card-body" th:utext="${postContent}">Content here</div>
     </div>
     <h5>Comments (<span th:text="${#lists.size(comments)}">0</span>)</h5>
     <div th:each="comment : ${comments}" class="comment-block">
-        <p th:text="${comment.content}">Comment content</p>
+        <p th:utext="${commentContents[comment.id]}">Comment content</p>
         <small class="text-muted">
             by <strong th:text="${comment.user.username}">author</strong>
             &mdash; <span th:text="${comment.timeString}">time</span>
