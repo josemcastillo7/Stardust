@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+<head th:replace="~{layout :: head('Compose Message')}"></head>
+<body>
+<div th:replace="~{header :: header}"></div>
+<div class="container mt-4">
+
+    <h2>Compose Message</h2>
+
+    <div th:if="${!errors.isEmpty()}" class="alert alert-danger">
+        <ul class="mb-0">
+            <li th:each="err : ${errors}" th:text="${err}">Error</li>
+        </ul>
+    </div>
+
+    <form th:action="@{/messages/compose}" method="post">
+        <div class="form-group">
+            <label>To</label>
+            <input type="text" name="to" class="form-control" required
+                   th:value="${toUsername}" placeholder="Username"/>
+        </div>
+        <div class="form-group">
+            <label>Subject</label>
+            <input type="text" name="subject" class="form-control" required
+                   maxlength="200" th:value="${subjectPrefill}" placeholder="Subject"/>
+        </div>
+        <div class="form-group">
+            <label>Message</label>
+            <textarea name="content" class="form-control" rows="8"
+                      required maxlength="4999"
+                      placeholder="Write your message here..."></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Send</button>
+        <a th:href="@{/messages/inbox}" class="btn btn-secondary ml-2">Cancel</a>
+    </form>
+
+</div>
+</body>
+</html>

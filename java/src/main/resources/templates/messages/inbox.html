@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+<head th:replace="~{layout :: head('Inbox')}"></head>
+<body>
+<div th:replace="~{header :: header}"></div>
+<div class="container mt-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Inbox</h2>
+        <a th:href="@{/messages/compose}" class="btn btn-primary">Compose</a>
+    </div>
+
+    <div class="mb-2">
+        <a th:href="@{/messages/outbox}" class="text-muted">Sent Messages</a>
+    </div>
+
+    <div th:if="${messages.isEmpty()}" class="text-muted mt-4">
+        No messages.
+    </div>
+
+    <div class="list-group message-list" th:unless="${messages.isEmpty()}">
+        <a th:each="msg : ${messages}"
+           th:href="@{/messages/view(id=${msg.id})}"
+           class="list-group-item list-group-item-action">
+            <div class="d-flex justify-content-between">
+                <span th:classappend="${!msg.read} ? 'font-weight-bold' : ''"
+                      th:text="${msg.sender.username}">sender</span>
+                <small class="text-muted" th:text="${msg.timeString}">time</small>
+            </div>
+            <div class="d-flex justify-content-between">
+                <span th:classappend="${!msg.read} ? 'font-weight-bold' : ''"
+                      th:text="${msg.subject}">subject</span>
+                <span th:if="${!msg.read}" class="badge badge-primary ml-2">New</span>
+            </div>
+        </a>
+    </div>
+
+</div>
+</body>
+</html>
