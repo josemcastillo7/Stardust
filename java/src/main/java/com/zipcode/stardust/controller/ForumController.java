@@ -1,9 +1,7 @@
 package com.zipcode.stardust.controller;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,7 +34,12 @@ public class ForumController {
     @Autowired private UserRepository userRepository;
     @Autowired private PasswordEncoder passwordEncoder;
     @Autowired private ForumService forumService;
-    @Autowired private CommonAttributesHelper helper;
+
+    @Value("${site.name:Schooner}")
+    private String siteName;
+
+    @Value("${site.description:a schooner forum}")
+    private String siteDescription;
 
     private User getCurrentUser(Authentication auth) {
         return helper.getCurrentUser(auth);
@@ -173,7 +176,6 @@ public class ForumController {
         model.addAttribute("post", p);
         model.addAttribute("postContent", forumService.renderMarkdown(p.getContent()));
         model.addAttribute("comments", comments);
-        model.addAttribute("commentContents", commentContents);
         model.addAttribute("breadcrumb", breadcrumb);
         model.addAttribute("errors", new ArrayList<>());
 
