@@ -1,19 +1,29 @@
 package com.zipcode.stardust.controller;
 
-import com.zipcode.stardust.model.*;
-import com.zipcode.stardust.repository.*;
-import com.zipcode.stardust.service.ForumService;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import com.zipcode.stardust.model.Comment;
+import com.zipcode.stardust.model.Post;
+import com.zipcode.stardust.model.Reaction;
+import com.zipcode.stardust.model.Subforum;
+import com.zipcode.stardust.model.User;
+import com.zipcode.stardust.repository.CommentRepository;
+import com.zipcode.stardust.repository.PostRepository;
+import com.zipcode.stardust.repository.SubforumRepository;
+import com.zipcode.stardust.repository.UserRepository;
+import com.zipcode.stardust.service.ForumService;
 
 @Controller
 public class ForumController {
@@ -174,6 +184,24 @@ public class ForumController {
         model.addAttribute("comments", comments);
         model.addAttribute("breadcrumb", breadcrumb);
         model.addAttribute("errors", new ArrayList<>());
+
+        // all reaction counts
+        model.addAttribute("likeCount",      forumService.getLikeCount(p));
+        model.addAttribute("dislikeCount",   forumService.getDislikeCount(p));
+        model.addAttribute("fireCount",      forumService.getFireCount(p));
+        model.addAttribute("funnyCount",     forumService.getFunnyCount(p));
+        model.addAttribute("sadCount",       forumService.getSadCount(p));
+        model.addAttribute("celebrateCount", forumService.getCelebrateCount(p));
+
+        // current user's reaction
+        User currentUser = getCurrentUser(auth);
+        if (currentUser != null) {
+            Reaction userReaction = forumService.getUserReaction(currentUser, p);
+            model.addAttribute("userReaction", userReaction != null ? userReaction.getType() : "");
+        } else {
+            model.addAttribute("userReaction", "");
+        }
+
         return "viewpost";
     }
 
@@ -195,5 +223,21 @@ public class ForumController {
     @GetMapping("/action_comment")
     public String addCommentGet(@RequestParam Long post) {
         return "redirect:/viewpost?post=" + post;
+    }
+
+    @PostMapping("/action_react")
+    public String reactToPost(@RequestParam Long postId,
+                               @RequestParam String type,
+                               Authentication auth) {
+        if (auth == null || !auth.isAuthenticated()) {
+            return "redirect:/loginform";
+        }
+        Optional<Post> opt = postRepository.findById(postId);
+        if (opt.isEmpty()) return "redirect:/";
+
+        User user = getCurrentUser(auth);
+        forumService.reactToPost(user, opt.get(), type);
+
+        return "redirect:/viewpost?post=" + postId + "&reacted=" + type;
     }
 }
