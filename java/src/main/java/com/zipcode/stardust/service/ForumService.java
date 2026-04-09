@@ -108,6 +108,7 @@ public class ForumService {
 
     public UserProfile updateBio(User user, String bio) {
         UserProfile profile = userProfileRepository.findByUser(user);
+        if (profile == null) profile = new UserProfile(user);
         profile.setBio(bio);
         return userProfileRepository.save(profile);
     }
