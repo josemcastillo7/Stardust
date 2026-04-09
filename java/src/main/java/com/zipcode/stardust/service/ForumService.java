@@ -50,6 +50,11 @@ public class ForumService {
         return sanitizer.sanitize(html);
     }
 
+    private UserProfileRepository userProfileRepository;  // ADD 1 - new repo
+    @Autowired
+    private ReactionRepository reactionRepository;
+
+
     public String generateLinkPath(Long subforumId) {
         StringBuilder sb = new StringBuilder();
         sb.append(" / <a href='/'>Forum Index</a>");
@@ -96,6 +101,7 @@ public class ForumService {
         return userRepository.existsByEmail(email);
     }
 
+
     // ADD 2 - UserProfile methods
     public UserProfile getUserProfile(User user) {
         return userProfileRepository.findByUser(user);
@@ -112,4 +118,56 @@ public class ForumService {
         profile.setBio(bio);
         return userProfileRepository.save(profile);
     }
+
+
+
+    // ── REACTIONS ────────────────────────────────────────────────
+
+    public void reactToPost(User user, Post post, String type) {
+        Reaction existing = reactionRepository.findByUserAndPost(user, post);
+
+        if (existing == null) {
+            Reaction reaction = new Reaction();
+            reaction.setUser(user);
+            reaction.setPost(post);
+            reaction.setType(type);
+            reactionRepository.save(reaction);
+
+        } else if (existing.getType().equals(type)) {
+            reactionRepository.delete(existing);
+
+        } else {
+            existing.setType(type);
+            reactionRepository.save(existing);
+        }
+    }
+
+    public Long getLikeCount(Post post) {
+        return reactionRepository.countByPostAndType(post, "LIKE");
+    }
+
+    public Long getDislikeCount(Post post) {
+        return reactionRepository.countByPostAndType(post, "DISLIKE");
+    }
+
+    public Long getFireCount(Post post) {
+        return reactionRepository.countByPostAndType(post, "FIRE");
+    }
+
+    public Long getFunnyCount(Post post) {
+        return reactionRepository.countByPostAndType(post, "FUNNY");
+    }
+
+    public Long getSadCount(Post post) {
+        return reactionRepository.countByPostAndType(post, "SAD");
+    }
+
+    public Long getCelebrateCount(Post post) {
+        return reactionRepository.countByPostAndType(post, "CELEBRATE");
+    }
+
+    public Reaction getUserReaction(User user, Post post) {
+        return reactionRepository.findByUserAndPost(user, post);
+    }
 }
+

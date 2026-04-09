@@ -54,3 +54,25 @@ By default, the app runs on:
 - user profile/settings pages
 - media embedding (image/video links)
 - moderation tools and role-based controls
+
+
+to run it- cd java
+mvn spring-boot:run
+
+curl -s -b cookies.txt http://localhost:5000/viewpost?post=1 | grep -o "action_react" | head -1
+
+curl -s -o /dev/null -w "%{http_code}" -X POST \
+  -b cookies.txt -c cookies.txt \
+  -d "postId=1&type=LIKE" \
+  http://localhost:5000/action_react
+
+Reaction.java
+→
+ReactionRepository
+→
+ForumService
+→
+ForumController
+→
+viewpost.html
+
