@@ -1,8 +1,12 @@
 package com.zipcode.stardust.service;
 
-
 import java.util.Optional;
 
+import org.commonmark.node.Node;
+import org.commonmark.parser.Parser;
+import org.commonmark.renderer.html.HtmlRenderer;
+import org.owasp.html.HtmlPolicyBuilder;
+import org.owasp.html.PolicyFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.HtmlUtils;
@@ -27,11 +31,30 @@ public class ForumService {
     private UserRepository userRepository;
 
     @Autowired
+    private UserProfileRepository userProfileRepository;
 
-    private UserProfileRepository userProfileRepository;  // ADD 1 - new repo
     @Autowired
     private ReactionRepository reactionRepository;
 
+    // Markdown rendering pipeline — thread-safe singletons
+    private final Parser mdParser = Parser.builder().build();
+    private final HtmlRenderer mdRenderer = HtmlRenderer.builder().build();
+    private final PolicyFactory sanitizer = new HtmlPolicyBuilder()
+            .allowElements("p", "br", "hr", "b", "strong", "em", "i", "u", "s",
+                           "code", "pre", "blockquote", "ul", "ol", "li",
+                           "h1", "h2", "h3", "h4")
+            .allowUrlProtocols("http", "https")
+            .allowElements("a")
+            .allowAttributes("href").onElements("a")
+            .requireRelNofollowOnLinks()
+            .toFactory();
+
+    public String renderMarkdown(String raw) {
+        if (raw == null) return "";
+        Node document = mdParser.parse(raw);
+        String html = mdRenderer.render(document);
+        return sanitizer.sanitize(html);
+    }
 
     public String generateLinkPath(Long subforumId) {
         StringBuilder sb = new StringBuilder();
@@ -92,6 +115,7 @@ public class ForumService {
 
     public UserProfile updateBio(User user, String bio) {
         UserProfile profile = userProfileRepository.findByUser(user);
+        if (profile == null) profile = new UserProfile(user);
         profile.setBio(bio);
         return userProfileRepository.save(profile);
     }

@@ -1,18 +1,20 @@
 package com.zipcode.stardust.controller;
  
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
 import com.zipcode.stardust.model.MediaEmbed;
 import com.zipcode.stardust.model.MediaEmbed.MediaType;
 import com.zipcode.stardust.model.Post;
 import com.zipcode.stardust.model.User;
 import com.zipcode.stardust.repository.PostRepository;
 import com.zipcode.stardust.service.MediaEmbedService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
- 
-import java.util.Optional;
  
 /**
  * =============================================================

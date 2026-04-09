@@ -1,11 +1,12 @@
 package com.zipcode.stardust.controller;
 
-import com.zipcode.stardust.model.*;
-import com.zipcode.stardust.repository.*;
-import com.zipcode.stardust.service.ForumService;
-import com.zipcode.stardust.service.MediaEmbedService;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
@@ -20,9 +21,11 @@ import com.zipcode.stardust.model.Reaction;
 import com.zipcode.stardust.model.Subforum;
 import com.zipcode.stardust.model.User;
 import com.zipcode.stardust.repository.CommentRepository;
+import com.zipcode.stardust.repository.MediaEmbedRepository;
 import com.zipcode.stardust.repository.PostRepository;
 import com.zipcode.stardust.repository.SubforumRepository;
 import com.zipcode.stardust.repository.UserRepository;
+import com.zipcode.stardust.service.CommonAttributesHelper;
 import com.zipcode.stardust.service.ForumService;
 
 @Controller
@@ -34,31 +37,15 @@ public class ForumController {
     @Autowired private UserRepository userRepository;
     @Autowired private PasswordEncoder passwordEncoder;
     @Autowired private ForumService forumService;
-    @Autowired private MediaEmbedService mediaEmbedService;
-
-    @Value("${site.name:Schooner}")
-    private String siteName;
-
-    @Value("${site.description:a schooner forum}")
-    private String siteDescription;
+    @Autowired private MediaEmbedRepository mediaEmbedRepository;
+    @Autowired private CommonAttributesHelper helper;
 
     private User getCurrentUser(Authentication auth) {
-        if (auth == null || !auth.isAuthenticated() ||
-                "anonymousUser".equals(auth.getPrincipal())) {
-            return null;
-        }
-        return (User) auth.getPrincipal();
+        return helper.getCurrentUser(auth);
     }
 
     private void addCommonAttributes(Model model, Authentication auth) {
-        model.addAttribute("siteName", siteName);
-        model.addAttribute("siteDescription", siteDescription);
-        if (auth != null && auth.isAuthenticated() && !"anonymousUser".equals(auth.getPrincipal())) {
-            model.addAttribute("currentUser", auth.getName());
-            model.addAttribute("isLoggedIn", true);
-        } else {
-            model.addAttribute("isLoggedIn", false);
-        }
+        helper.addCommonAttributes(model, auth);
     }
 
     @GetMapping("/")
@@ -181,9 +168,15 @@ public class ForumController {
         Post p = opt.get();
         List<Comment> comments = commentRepository.findByPostOrderByPostdateAsc(p);
         String breadcrumb = forumService.generateLinkPath(p.getSubforum().getId());
+        Map<Long, String> commentContents = new LinkedHashMap<>();
+        for (Comment c : comments) {
+            commentContents.put(c.getId(), forumService.renderMarkdown(c.getContent()));
+        }
         model.addAttribute("post", p);
+        model.addAttribute("postContent", forumService.renderMarkdown(p.getContent()));
         model.addAttribute("comments", comments);
-        model.addAttribute("embeds", mediaEmbedService.getEmbedsForPost(p));
+        model.addAttribute("commentContents", commentContents);
+        model.addAttribute("embeds", mediaEmbedRepository.findByPostOrderByIdAsc(p));
         model.addAttribute("breadcrumb", breadcrumb);
         model.addAttribute("errors", new ArrayList<>());
 

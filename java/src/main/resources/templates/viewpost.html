@@ -16,7 +16,7 @@
         &mdash; <span th:text="${post.timeString}">time</span>
     </p>
     <div class="card mb-4">
-        <div class="card-body" th:text="${post.content}">Content here</div>
+        <div class="card-body" th:utext="${postContent}">Content here</div>
     </div>
     <!-- Media Embeds -->
     <div th:if="${not #lists.isEmpty(embeds)}" class="mb-4">
@@ -31,7 +31,7 @@
             <p th:if="${embed.caption != null and !embed.caption.isBlank()}"
                class="text-muted small" th:text="${embed.caption}"></p>
             <form th:action="@{/action_delete_embed}" method="post"
-                  th:if="${isLoggedIn}">
+                  th:if="${isLoggedIn and (currentUser == post.user.username or #authentication.principal.admin)}">
                 <input type="hidden" name="embedId" th:value="${embed.id}" />
                 <input type="hidden" name="post" th:value="${post.id}" />
                 <button type="submit" class="btn btn-sm btn-danger">Remove</button>
@@ -60,7 +60,7 @@
 
     <h5>Comments (<span th:text="${#lists.size(comments)}">0</span>)</h5>
     <div th:each="comment : ${comments}" class="comment-block">
-        <p th:text="${comment.content}">Comment content</p>
+        <p th:utext="${commentContents[comment.id]}">Comment content</p>
         <small class="text-muted">
             by <strong th:text="${comment.user.username}">author</strong>
             &mdash; <span th:text="${comment.timeString}">time</span>

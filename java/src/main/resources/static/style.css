@@ -19,3 +19,6 @@ body {
     padding: 10px;
     margin-bottom: 10px;
 }
+.message-list .list-group-item {
+    border-left: 4px solid #6f42c1;
+}

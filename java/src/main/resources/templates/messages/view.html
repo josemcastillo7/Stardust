@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+<head th:replace="~{layout :: head(${message.subject})}"></head>
+<body>
+<div th:replace="~{header :: header}"></div>
+<div class="container mt-4">
+
+    <div class="mb-3">
+        <a th:href="${isSender} ? '/messages/outbox' : '/messages/inbox'"
+           class="text-muted">&larr; Back</a>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-1" th:text="${message.subject}">Subject</h5>
+            <small class="text-muted">
+                From <strong th:text="${message.sender.username}">sender</strong>
+                to <strong th:text="${message.recipient.username}">recipient</strong>
+                &mdash; <span th:text="${message.timeString}">time</span>
+            </small>
+        </div>
+        <div class="card-body">
+            <p th:text="${message.content}">Message content</p>
+        </div>
+    </div>
+
+    <div class="d-flex">
+        <a th:unless="${isSender}" th:href="${replyUrl}"
+           class="btn btn-primary mr-2">Reply</a>
+
+        <form th:action="@{/messages/delete}" method="post" class="d-inline">
+            <input type="hidden" name="id" th:value="${message.id}"/>
+            <input type="hidden" name="box" th:value="${isSender} ? 'outbox' : 'inbox'"/>
+            <button type="submit" class="btn btn-danger"
+                    onclick="return confirm('Delete this message?')">Delete</button>
+        </form>
+    </div>
+
+</div>
+</body>
+</html>

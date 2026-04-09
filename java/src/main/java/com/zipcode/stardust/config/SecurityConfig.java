@@ -38,7 +38,7 @@ public class SecurityConfig {
                         "/action_createaccount", "/static/**", "/style.css").permitAll()
                 .requestMatchers("/addpost", "/action_post", "/action_comment")
                         .authenticated()
-                .anyRequest().permitAll()
+                .anyRequest().authenticated()
             )
             .formLogin(form -> form
                 .loginPage("/loginform")
