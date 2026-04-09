@@ -50,7 +50,7 @@ public class User implements UserDetails {
         this.email = email;
         this.username = username;
         this.passwordHash = encoder.encode(rawPassword);
-        this.admin = "admin".equalsIgnoreCase(username);
+        this.admin = "admin".equalsIgnoreCase(username); ///meanifull
     }
 
     public boolean checkPassword(String rawPassword, PasswordEncoder encoder) {

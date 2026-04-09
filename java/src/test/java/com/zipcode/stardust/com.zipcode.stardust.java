@@ -1,10 +1,10 @@
-package com.zipcode.stardust;
+package com.zipcode.Stardust;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class StardustApplicationTests {
+class stardustApplicationTests {
     @Test
     void contextLoads() {}
 }
