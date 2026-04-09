@@ -1,0 +1,133 @@
+package com.zipcode.stardust.model;
+ 
+import jakarta.persistence.*;
+ 
+/**
+ * =============================================================
+ *  MediaEmbed — a database entity that stores one media link
+ *  attached to a Post.
+ *
+ *  KEY CONCEPTS FOR LEARNERS
+ *  --------------------------
+ *  @Entity     → tells JPA "make a table for this class"
+ *  @Table      → lets us name the table ourselves ("media_embed")
+ *  @Id         → marks the primary-key field
+ *  @GeneratedValue → the database auto-assigns the id number
+ *  @ManyToOne  → many embeds can belong to ONE post
+ *  @JoinColumn → the foreign-key column in the DB table
+ *  @Enumerated → stores our enum as a readable string ("IMAGE"
+ *                or "VIDEO") instead of a number
+ * =============================================================
+ */
+@Entity
+@Table(name = "media_embed")
+public class MediaEmbed {
+ 
+    // ── Enum ────────────────────────────────────────────────
+    /**
+     * MediaType limits the kind of media to IMAGE or VIDEO.
+     * Using an enum prevents typos like "img" vs "image".
+     */
+    public enum MediaType {
+        IMAGE,
+        VIDEO
+    }
+ 
+    // ── Fields ──────────────────────────────────────────────
+ 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+ 
+    /**
+     * The URL the user pasted (e.g. https://i.imgur.com/abc.jpg).
+     * nullable = false → the DB will reject a row with no URL.
+     * length = 2048   → URLs can be long; 255 (the default) is too short.
+     */
+    @Column(nullable = false, length = 2048)
+    private String url;
+ 
+    /**
+     * IMAGE or VIDEO — stored as the enum name string in the DB.
+     * EnumType.STRING is safer than ORDINAL because adding new
+     * enum values won't silently corrupt old data.
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private MediaType mediaType;
+ 
+    /**
+     * Optional caption the user may provide (e.g. "My cat").
+     * nullable = true (default) means it is allowed to be blank.
+     */
+    @Column(length = 300)
+    private String caption;
+ 
+    /**
+     * The post this embed belongs to.
+     * FetchType.LAZY → don't load the whole Post object from the
+     * DB until we actually call getPost(); saves memory.
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "post_id", nullable = false)
+    private Post post;
+ 
+    // ── Constructors ─────────────────────────────────────────
+ 
+    /** JPA needs a no-argument constructor (it uses reflection). */
+    public MediaEmbed() {}
+ 
+    /**
+     * Convenience constructor used in the controller when saving
+     * a new embed.
+     *
+     * @param url       the media URL
+     * @param mediaType IMAGE or VIDEO
+     * @param caption   optional caption (may be null or blank)
+     * @param post      the parent post
+     */
+    public MediaEmbed(String url, MediaType mediaType, String caption, Post post) {
+        this.url       = url;
+        this.mediaType = mediaType;
+        this.caption   = caption;
+        this.post      = post;
+    }
+ 
+    // ── Getters & Setters ────────────────────────────────────
+    // These let other classes read/write the private fields.
+    // Spring and Thymeleaf use getters heavily.
+ 
+    public Long getId()                   { return id; }
+    public void setId(Long id)            { this.id = id; }
+ 
+    public String getUrl()                { return url; }
+    public void setUrl(String url)        { this.url = url; }
+ 
+    public MediaType getMediaType()                    { return mediaType; }
+    public void setMediaType(MediaType mediaType)      { this.mediaType = mediaType; }
+ 
+    public String getCaption()            { return caption; }
+    public void setCaption(String caption){ this.caption = caption; }
+ 
+    public Post getPost()                 { return post; }
+    public void setPost(Post post)        { this.post = post; }
+ 
+    // ── Helper used in Thymeleaf templates ───────────────────
+ 
+    /**
+     * Returns true when this embed is an IMAGE.
+     * Thymeleaf can call th:if="${embed.image}" instead of
+     * comparing the enum by name — cleaner templates!
+     */
+    public boolean isImage() {
+        return MediaType.IMAGE == this.mediaType;
+    }
+ 
+    /**
+     * Returns true when this embed is a VIDEO.
+     */
+    public boolean isVideo() {
+        return MediaType.VIDEO == this.mediaType;
+    }
+}
+ 
