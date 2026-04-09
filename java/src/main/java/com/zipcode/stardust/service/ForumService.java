@@ -1,16 +1,21 @@
 package com.zipcode.stardust.service;
 
-import com.zipcode.stardust.model.Subforum;
-import com.zipcode.stardust.model.UserProfile;
-import com.zipcode.stardust.model.User;
-import com.zipcode.stardust.repository.SubforumRepository;
-import com.zipcode.stardust.repository.UserRepository;
-import com.zipcode.stardust.repository.UserProfileRepository;
+
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.HtmlUtils;
 
-import java.util.Optional;
+import com.zipcode.stardust.model.Post;
+import com.zipcode.stardust.model.Reaction;
+import com.zipcode.stardust.model.Subforum;
+import com.zipcode.stardust.model.User;
+import com.zipcode.stardust.model.UserProfile;
+import com.zipcode.stardust.repository.ReactionRepository;
+import com.zipcode.stardust.repository.SubforumRepository;
+import com.zipcode.stardust.repository.UserProfileRepository;
+import com.zipcode.stardust.repository.UserRepository;
 
 @Service
 public class ForumService {
@@ -22,7 +27,11 @@ public class ForumService {
     private UserRepository userRepository;
 
     @Autowired
+
     private UserProfileRepository userProfileRepository;  // ADD 1 - new repo
+    @Autowired
+    private ReactionRepository reactionRepository;
+
 
     public String generateLinkPath(Long subforumId) {
         StringBuilder sb = new StringBuilder();
@@ -70,6 +79,7 @@ public class ForumService {
         return userRepository.existsByEmail(email);
     }
 
+
     // ADD 2 - UserProfile methods
     public UserProfile getUserProfile(User user) {
         return userProfileRepository.findByUser(user);
@@ -86,4 +96,55 @@ public class ForumService {
         return userProfileRepository.save(profile);
     }
 
+
+
+    // ── REACTIONS ────────────────────────────────────────────────
+
+    public void reactToPost(User user, Post post, String type) {
+        Reaction existing = reactionRepository.findByUserAndPost(user, post);
+
+        if (existing == null) {
+            Reaction reaction = new Reaction();
+            reaction.setUser(user);
+            reaction.setPost(post);
+            reaction.setType(type);
+            reactionRepository.save(reaction);
+
+        } else if (existing.getType().equals(type)) {
+            reactionRepository.delete(existing);
+
+        } else {
+            existing.setType(type);
+            reactionRepository.save(existing);
+        }
+    }
+
+    public Long getLikeCount(Post post) {
+        return reactionRepository.countByPostAndType(post, "LIKE");
+    }
+
+    public Long getDislikeCount(Post post) {
+        return reactionRepository.countByPostAndType(post, "DISLIKE");
+    }
+
+    public Long getFireCount(Post post) {
+        return reactionRepository.countByPostAndType(post, "FIRE");
+    }
+
+    public Long getFunnyCount(Post post) {
+        return reactionRepository.countByPostAndType(post, "FUNNY");
+    }
+
+    public Long getSadCount(Post post) {
+        return reactionRepository.countByPostAndType(post, "SAD");
+    }
+
+    public Long getCelebrateCount(Post post) {
+        return reactionRepository.countByPostAndType(post, "CELEBRATE");
+    }
+
+    public Reaction getUserReaction(User user, Post post) {
+        return reactionRepository.findByUserAndPost(user, post);
+    }
 }
+
