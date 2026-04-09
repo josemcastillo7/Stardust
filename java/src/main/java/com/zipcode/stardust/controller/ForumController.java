@@ -21,6 +21,7 @@ import com.zipcode.stardust.model.Reaction;
 import com.zipcode.stardust.model.Subforum;
 import com.zipcode.stardust.model.User;
 import com.zipcode.stardust.repository.CommentRepository;
+import com.zipcode.stardust.repository.MediaEmbedRepository;
 import com.zipcode.stardust.repository.PostRepository;
 import com.zipcode.stardust.repository.SubforumRepository;
 import com.zipcode.stardust.repository.UserRepository;
@@ -36,6 +37,7 @@ public class ForumController {
     @Autowired private UserRepository userRepository;
     @Autowired private PasswordEncoder passwordEncoder;
     @Autowired private ForumService forumService;
+    @Autowired private MediaEmbedRepository mediaEmbedRepository;
     @Autowired private CommonAttributesHelper helper;
 
     private User getCurrentUser(Authentication auth) {
@@ -174,6 +176,7 @@ public class ForumController {
         model.addAttribute("postContent", forumService.renderMarkdown(p.getContent()));
         model.addAttribute("comments", comments);
         model.addAttribute("commentContents", commentContents);
+        model.addAttribute("embeds", mediaEmbedRepository.findByPostOrderByIdAsc(p));
         model.addAttribute("breadcrumb", breadcrumb);
         model.addAttribute("errors", new ArrayList<>());
 
