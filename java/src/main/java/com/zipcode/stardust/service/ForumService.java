@@ -11,9 +11,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.HtmlUtils;
 
+import com.zipcode.stardust.model.Post;
+import com.zipcode.stardust.model.Reaction;
 import com.zipcode.stardust.model.Subforum;
 import com.zipcode.stardust.model.User;
 import com.zipcode.stardust.model.UserProfile;
+import com.zipcode.stardust.repository.ReactionRepository;
 import com.zipcode.stardust.repository.SubforumRepository;
 import com.zipcode.stardust.repository.UserProfileRepository;
 import com.zipcode.stardust.repository.UserRepository;
@@ -29,6 +32,9 @@ public class ForumService {
 
     @Autowired
     private UserProfileRepository userProfileRepository;
+
+    @Autowired
+    private ReactionRepository reactionRepository;
 
     // Markdown rendering pipeline — thread-safe singletons
     private final Parser mdParser = Parser.builder().build();
@@ -49,11 +55,6 @@ public class ForumService {
         String html = mdRenderer.render(document);
         return sanitizer.sanitize(html);
     }
-
-    private UserProfileRepository userProfileRepository;  // ADD 1 - new repo
-    @Autowired
-    private ReactionRepository reactionRepository;
-
 
     public String generateLinkPath(Long subforumId) {
         StringBuilder sb = new StringBuilder();
