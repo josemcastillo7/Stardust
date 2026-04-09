@@ -47,6 +47,9 @@ public class ForumService {
             .allowElements("a")
             .allowAttributes("href").onElements("a")
             .requireRelNofollowOnLinks()
+            .allowElements("img")
+            .allowAttributes("src", "alt").onElements("img")
+            .allowUrlProtocols("http", "https")
             .toFactory();
 
     public String renderMarkdown(String raw) {
