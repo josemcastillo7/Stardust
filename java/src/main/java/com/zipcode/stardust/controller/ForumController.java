@@ -1,9 +1,9 @@
 package com.zipcode.stardust.controller;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
+import com.zipcode.stardust.model.*;
+import com.zipcode.stardust.repository.*;
+import com.zipcode.stardust.service.ForumService;
+import com.zipcode.stardust.service.MediaEmbedService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
@@ -34,6 +34,7 @@ public class ForumController {
     @Autowired private UserRepository userRepository;
     @Autowired private PasswordEncoder passwordEncoder;
     @Autowired private ForumService forumService;
+    @Autowired private MediaEmbedService mediaEmbedService;
 
     @Value("${site.name:Schooner}")
     private String siteName;
@@ -182,6 +183,7 @@ public class ForumController {
         String breadcrumb = forumService.generateLinkPath(p.getSubforum().getId());
         model.addAttribute("post", p);
         model.addAttribute("comments", comments);
+        model.addAttribute("embeds", mediaEmbedService.getEmbedsForPost(p));
         model.addAttribute("breadcrumb", breadcrumb);
         model.addAttribute("errors", new ArrayList<>());
 

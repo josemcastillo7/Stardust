@@ -18,6 +18,46 @@
     <div class="card mb-4">
         <div class="card-body" th:text="${post.content}">Content here</div>
     </div>
+    <!-- Media Embeds -->
+    <div th:if="${not #lists.isEmpty(embeds)}" class="mb-4">
+        <h5>Media</h5>
+        <div th:each="embed : ${embeds}" class="mb-3">
+            <div th:if="${embed.image}">
+                <img th:src="${embed.url}" class="img-fluid" alt="embedded image" />
+            </div>
+            <div th:if="${embed.video}">
+                <video th:src="${embed.url}" controls class="img-fluid"></video>
+            </div>
+            <p th:if="${embed.caption != null and !embed.caption.isBlank()}"
+               class="text-muted small" th:text="${embed.caption}"></p>
+            <form th:action="@{/action_delete_embed}" method="post"
+                  th:if="${isLoggedIn}">
+                <input type="hidden" name="embedId" th:value="${embed.id}" />
+                <input type="hidden" name="post" th:value="${post.id}" />
+                <button type="submit" class="btn btn-sm btn-danger">Remove</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Media Form -->
+    <div th:if="${isLoggedIn}" class="mb-4">
+        <h5>Add Media</h5>
+        <p th:if="${embedError}" class="text-danger" th:text="${embedError}"></p>
+        <p th:if="${embedSuccess}" class="text-success" th:text="${embedSuccess}"></p>
+        <form th:action="@{/action_add_embed}" method="post">
+            <input type="hidden" name="post" th:value="${post.id}" />
+            <div class="form-group mb-2">
+                <input type="url" name="url" class="form-control"
+                       placeholder="https://example.com/image.jpg" required />
+            </div>
+            <div class="form-group mb-2">
+                <input type="text" name="caption" class="form-control"
+                       placeholder="Caption (optional, max 300 chars)" />
+            </div>
+            <button type="submit" class="btn btn-secondary">Add Media</button>
+        </form>
+    </div>
+
     <h5>Comments (<span th:text="${#lists.size(comments)}">0</span>)</h5>
     <div th:each="comment : ${comments}" class="comment-block">
         <p th:text="${comment.content}">Comment content</p>
