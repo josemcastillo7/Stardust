@@ -8,6 +8,10 @@
         <div class="navbar-nav flex-row">
             <a class="nav-link text-white mr-3" th:href="@{/}">Subforum Index</a>
             <span sec:authorize="isAuthenticated()">
+                <a class="nav-link text-white d-inline mr-2" th:href="@{/messages/inbox}">
+                    Messages
+                    <span th:if="${unreadCount > 0}" class="badge badge-danger" th:text="${unreadCount}">0</span>
+                </a>
                 <span class="text-white mr-2" th:text="'Hello, ' + ${currentUser}">Hello, user</span>
                 <form th:action="@{/action_logout}" method="post" class="d-inline">
                     <button type="submit" class="btn btn-link nav-link text-white d-inline p-0">Logout</button>

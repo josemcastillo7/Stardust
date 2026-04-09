@@ -2,9 +2,9 @@ package com.zipcode.stardust.controller;
 
 import com.zipcode.stardust.model.*;
 import com.zipcode.stardust.repository.*;
+import com.zipcode.stardust.service.CommonAttributesHelper;
 import com.zipcode.stardust.service.ForumService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
@@ -26,30 +26,14 @@ public class ForumController {
     @Autowired private UserRepository userRepository;
     @Autowired private PasswordEncoder passwordEncoder;
     @Autowired private ForumService forumService;
-
-    @Value("${site.name:Schooner}")
-    private String siteName;
-
-    @Value("${site.description:a schooner forum}")
-    private String siteDescription;
+    @Autowired private CommonAttributesHelper helper;
 
     private User getCurrentUser(Authentication auth) {
-        if (auth == null || !auth.isAuthenticated() ||
-                "anonymousUser".equals(auth.getPrincipal())) {
-            return null;
-        }
-        return (User) auth.getPrincipal();
+        return helper.getCurrentUser(auth);
     }
 
     private void addCommonAttributes(Model model, Authentication auth) {
-        model.addAttribute("siteName", siteName);
-        model.addAttribute("siteDescription", siteDescription);
-        if (auth != null && auth.isAuthenticated() && !"anonymousUser".equals(auth.getPrincipal())) {
-            model.addAttribute("currentUser", auth.getName());
-            model.addAttribute("isLoggedIn", true);
-        } else {
-            model.addAttribute("isLoggedIn", false);
-        }
+        helper.addCommonAttributes(model, auth);
     }
 
     @GetMapping("/")
