@@ -1,0 +1,15 @@
+{
+  "properties": [
+    {
+      "name": "site.name",
+      "type": "java.lang.String",
+      "description": "A description for 'site.name'"
+    },
+    {
+      "name": "site.description",
+      "type": "java.lang.String",
+      "description": "A description for 'site.description'"
+    }
+  ]
+}
+
