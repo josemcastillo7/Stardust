@@ -4,6 +4,18 @@
 <head th:replace="~{layout :: head(${post.title})}"></head>
 <body>
 <div th:replace="~{header :: header}"></div>
+
+<style>
+  .reaction-btn{border-radius:24px;padding:6px 16px;font-size:14px;font-weight:500;cursor:pointer;border:2px solid;background:transparent;transition:all 0.15s ease}
+  .reaction-btn:hover{opacity:0.85;transform:scale(1.04)}
+  .reaction-count{background:rgba(0,0,0,0.1);border-radius:12px;padding:1px 8px;font-size:12px;margin-left:4px}
+  .reaction-guest{border-radius:24px;padding:6px 16px;font-size:14px;font-weight:500;border:2px solid;background:transparent;opacity:0.5;cursor:default;display:inline-block}
+  .dislike-message{background:#fff3cd;border:1px solid #ffc107;border-radius:8px;padding:10px 16px;font-size:13px;color:#856404;margin-bottom:1rem;display:flex;align-items:center;gap:8px}
+  .firework{position:fixed;pointer-events:none;z-index:9999}
+  @keyframes fly{0%{transform:translate(0,0) scale(1);opacity:1}100%{transform:translate(var(--tx),var(--ty)) scale(0);opacity:0}}
+  .spark{position:absolute;width:8px;height:8px;border-radius:50%;animation:fly 0.9s ease-out forwards}
+</style>
+
 <div class="container mt-4">
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
@@ -18,6 +30,72 @@
     <div class="card mb-4">
         <div class="card-body" th:utext="${postContent}">Content here</div>
     </div>
+
+    <!-- ── REACTIONS — nishat ────────────────────────────── -->
+    <div class="dislike-message" th:if="${userReaction == 'DISLIKE'}">
+        &#128529; You marked this as <strong>I don't like this</strong> — your feedback has been noted.
+    </div>
+    <div sec:authorize="isAuthenticated()" class="mb-4 d-flex flex-wrap" style="gap:8px;">
+        <form th:action="@{/action_react}" method="post" class="d-inline">
+            <input type="hidden" name="postId" th:value="${post.id}"/>
+            <input type="hidden" name="type" value="LIKE"/>
+            <button type="submit" class="reaction-btn"
+                th:style="${userReaction == 'LIKE'} ? 'border-color:#28a745;background:#28a745;color:white;' : 'border-color:#28a745;color:#28a745;'">
+                &#128077; Like <span class="reaction-count" th:text="${likeCount}">0</span>
+            </button>
+        </form>
+        <form th:action="@{/action_react}" method="post" class="d-inline">
+            <input type="hidden" name="postId" th:value="${post.id}"/>
+            <input type="hidden" name="type" value="DISLIKE"/>
+            <button type="submit" class="reaction-btn"
+                th:style="${userReaction == 'DISLIKE'} ? 'border-color:#dc3545;background:#dc3545;color:white;' : 'border-color:#dc3545;color:#dc3545;'">
+                &#128529; I don't like this <span class="reaction-count" th:text="${dislikeCount}">0</span>
+            </button>
+        </form>
+        <form th:action="@{/action_react}" method="post" class="d-inline">
+            <input type="hidden" name="postId" th:value="${post.id}"/>
+            <input type="hidden" name="type" value="FIRE"/>
+            <button type="submit" class="reaction-btn"
+                th:style="${userReaction == 'FIRE'} ? 'border-color:#fd7e14;background:#fd7e14;color:white;' : 'border-color:#fd7e14;color:#fd7e14;'">
+                &#128293; Fire <span class="reaction-count" th:text="${fireCount}">0</span>
+            </button>
+        </form>
+        <form th:action="@{/action_react}" method="post" class="d-inline">
+            <input type="hidden" name="postId" th:value="${post.id}"/>
+            <input type="hidden" name="type" value="FUNNY"/>
+            <button type="submit" class="reaction-btn"
+                th:style="${userReaction == 'FUNNY'} ? 'border-color:#6f42c1;background:#6f42c1;color:white;' : 'border-color:#6f42c1;color:#6f42c1;'">
+                &#128514; Funny <span class="reaction-count" th:text="${funnyCount}">0</span>
+            </button>
+        </form>
+        <form th:action="@{/action_react}" method="post" class="d-inline">
+            <input type="hidden" name="postId" th:value="${post.id}"/>
+            <input type="hidden" name="type" value="SAD"/>
+            <button type="submit" class="reaction-btn"
+                th:style="${userReaction == 'SAD'} ? 'border-color:#17a2b8;background:#17a2b8;color:white;' : 'border-color:#17a2b8;color:#17a2b8;'">
+                &#128546; Sad <span class="reaction-count" th:text="${sadCount}">0</span>
+            </button>
+        </form>
+        <form th:action="@{/action_react}" method="post" class="d-inline" id="celebrateForm">
+            <input type="hidden" name="postId" th:value="${post.id}"/>
+            <input type="hidden" name="type" value="CELEBRATE"/>
+            <button type="button" class="reaction-btn"
+                th:style="${userReaction == 'CELEBRATE'} ? 'border-color:#e83e8c;background:#e83e8c;color:white;' : 'border-color:#e83e8c;color:#e83e8c;'"
+                onclick="launchFireworks(this)">
+                &#127881; Celebrate <span class="reaction-count" th:text="${celebrateCount}">0</span>
+            </button>
+        </form>
+    </div>
+    <div sec:authorize="!isAuthenticated()" class="mb-4 d-flex flex-wrap" style="gap:8px;">
+        <span class="reaction-guest" style="border-color:#28a745;color:#28a745;">&#128077; Like <span class="reaction-count" th:text="${likeCount}">0</span></span>
+        <span class="reaction-guest" style="border-color:#dc3545;color:#dc3545;">&#128529; I don't like this <span class="reaction-count" th:text="${dislikeCount}">0</span></span>
+        <span class="reaction-guest" style="border-color:#fd7e14;color:#fd7e14;">&#128293; Fire <span class="reaction-count" th:text="${fireCount}">0</span></span>
+        <span class="reaction-guest" style="border-color:#6f42c1;color:#6f42c1;">&#128514; Funny <span class="reaction-count" th:text="${funnyCount}">0</span></span>
+        <span class="reaction-guest" style="border-color:#17a2b8;color:#17a2b8;">&#128546; Sad <span class="reaction-count" th:text="${sadCount}">0</span></span>
+        <span class="reaction-guest" style="border-color:#e83e8c;color:#e83e8c;">&#127881; Celebrate <span class="reaction-count" th:text="${celebrateCount}">0</span></span>
+    </div>
+    <!-- ── END REACTIONS ─────────────────────────────────── -->
+
     <!-- Media Embeds -->
     <div th:if="${not #lists.isEmpty(embeds)}" class="mb-4">
         <h5>Media</h5>
@@ -38,7 +116,6 @@
             </form>
         </div>
     </div>
-
     <!-- Add Media Form -->
     <div th:if="${isLoggedIn}" class="mb-4">
         <h5>Add Media</h5>
@@ -73,6 +150,10 @@
             <div class="form-group">
                 <textarea name="content" class="form-control" rows="4" required
                           placeholder="Write your comment here..."></textarea>
+                <small class="form-text text-muted mt-1">
+                    Markdown supported: <code>**bold**</code>, <code>_italic_</code>,
+                    <code>`code`</code>, <code># Heading</code>, <code>- list item</code>
+                </small>
             </div>
             <button type="submit" class="btn btn-primary">Submit Comment</button>
         </form>
@@ -81,5 +162,34 @@
         <a th:href="@{/loginform}">Login</a> to post a comment.
     </div>
 </div>
+
+<script>
+  const COLORS=['#e83e8c','#fd7e14','#28a745','#17a2b8','#6f42c1','#ffc107','#dc3545'];
+  function spawnBurst(cx,cy){
+    for(let i=0;i<24;i++){
+      const w=document.createElement('div');
+      w.className='firework';w.style.left=cx+'px';w.style.top=cy+'px';
+      const angle=(i/24)*2*Math.PI,dist=60+Math.random()*110;
+      const s=document.createElement('div');s.className='spark';
+      s.style.setProperty('--tx',(Math.cos(angle)*dist)+'px');
+      s.style.setProperty('--ty',(Math.sin(angle)*dist)+'px');
+      s.style.background=COLORS[Math.floor(Math.random()*COLORS.length)];
+      s.style.animationDelay=(Math.random()*0.2)+'s';
+      w.appendChild(s);document.body.appendChild(w);
+      setTimeout(()=>w.remove(),1200);
+    }
+  }
+  function launchFireworks(btn){
+    const r=btn.getBoundingClientRect();
+    spawnBurst(r.left+r.width/2,r.top+r.height/2);
+    setTimeout(()=>document.getElementById('celebrateForm').submit(),700);
+  }
+  window.addEventListener('DOMContentLoaded',()=>{
+    const p=new URLSearchParams(window.location.search);
+    if(p.get('reacted')==='CELEBRATE'){
+      for(let b=0;b<3;b++)setTimeout(()=>spawnBurst(Math.random()*window.innerWidth,Math.random()*(window.innerHeight*0.5)),b*350);
+    }
+  });
+</script>
 </body>
 </html>
