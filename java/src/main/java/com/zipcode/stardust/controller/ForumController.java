@@ -220,6 +220,53 @@ public class ForumController {
         return "redirect:/viewpost?post=" + post;
     }
 
+    @GetMapping("/settings")
+    public String settingsPage(Model model, Authentication auth) {
+        User user = getCurrentUser(auth);
+        if (user == null) return "redirect:/loginform";
+        addCommonAttributes(model, auth);
+        model.addAttribute("profile", forumService.getUserProfile(user));
+        model.addAttribute("errors", new ArrayList<>());
+        model.addAttribute("success", "");
+        return "settings";
+    }
+
+    @PostMapping("/action_update_bio")
+    public String updateBio(@RequestParam String bio, Authentication auth) {
+        User user = getCurrentUser(auth);
+        if (user == null) return "redirect:/loginform";
+        forumService.updateBio(user, bio);
+        return "redirect:/settings?saved=bio";
+    }
+
+    @PostMapping("/action_update_email")
+    public String updateEmail(@RequestParam String email, Authentication auth,
+                               org.springframework.web.servlet.mvc.support.RedirectAttributes ra) {
+        User user = getCurrentUser(auth);
+        if (user == null) return "redirect:/loginform";
+        if (!forumService.updateEmail(user, email)) {
+            ra.addFlashAttribute("emailError", "Email is already in use or invalid.");
+        } else {
+            ra.addFlashAttribute("success", "Email updated.");
+        }
+        return "redirect:/settings";
+    }
+
+    @PostMapping("/action_update_password")
+    public String updatePassword(@RequestParam String currentPassword,
+                                  @RequestParam String newPassword,
+                                  Authentication auth,
+                                  org.springframework.web.servlet.mvc.support.RedirectAttributes ra) {
+        User user = getCurrentUser(auth);
+        if (user == null) return "redirect:/loginform";
+        if (!forumService.updatePassword(user, currentPassword, newPassword, passwordEncoder)) {
+            ra.addFlashAttribute("passwordError", "Current password is wrong or new password is invalid (6-40 chars, alphanumeric + !@#%&).");
+        } else {
+            ra.addFlashAttribute("success", "Password updated.");
+        }
+        return "redirect:/settings";
+    }
+
     @PostMapping("/action_react")
     public String reactToPost(@RequestParam Long postId,
                                @RequestParam String type,

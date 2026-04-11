@@ -123,6 +123,23 @@ public class ForumService {
         return userProfileRepository.save(profile);
     }
 
+    public boolean updateEmail(User user, String newEmail) {
+        if (newEmail == null || newEmail.isBlank()) return false;
+        if (emailTaken(newEmail) && !newEmail.equalsIgnoreCase(user.getEmail())) return false;
+        user.setEmail(newEmail);
+        userRepository.save(user);
+        return true;
+    }
+
+    public boolean updatePassword(User user, String currentRaw, String newRaw,
+                                   org.springframework.security.crypto.password.PasswordEncoder encoder) {
+        if (!user.checkPassword(currentRaw, encoder)) return false;
+        if (!validPassword(newRaw)) return false;
+        user.setPasswordHash(encoder.encode(newRaw));
+        userRepository.save(user);
+        return true;
+    }
+
 
 
     // ── REACTIONS ────────────────────────────────────────────────
