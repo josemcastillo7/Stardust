@@ -1,4 +1,23 @@
 services:
+<<<<<<< HEAD
+=======
+  db:
+    image: postgres:16
+    ports:
+      - "7070:5432"
+    environment:
+      POSTGRES_PASSWORD: rootpassword
+      POSTGRES_DB: stardust
+      POSTGRES_USER: postgres
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+>>>>>>> e3c4ef103c266fea3efc4f4fe26f2be72546600c
   app:
     build: .
     ports:
