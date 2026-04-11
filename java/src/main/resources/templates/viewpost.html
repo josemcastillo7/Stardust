@@ -137,24 +137,28 @@
 
     <h5>Comments (<span th:text="${#lists.size(comments)}">0</span>)</h5>
     <div th:each="comment : ${comments}" class="comment-block">
-        <p th:utext="${commentContents[comment.id]}">Comment content</p>
+        <p th:utext="${commentContents[comment.id] != null ? commentContents[comment.id] : comment.content}">Comment content</p>
         <small class="text-muted">
             by <strong th:text="${comment.user.username}">author</strong>
             &mdash; <span th:text="${comment.timeString}">time</span>
         </small>
     </div>
     <div th:if="${comments.isEmpty()}" class="text-muted">No comments yet.</div>
-    <div sec:authorize="isAuthenticated()" class="mt-4">
+    <div th:if="${isLoggedIn}" class="mt-4">
         <h5>Add a Comment</h5>
         <form th:action="@{/action_comment(post=${post.id})}" method="post">
             <div class="form-group">
                 <textarea name="content" class="form-control" rows="4" required
                           placeholder="Write your comment here..."></textarea>
+                <small class="form-text text-muted mt-1">
+                    Markdown supported: <code>**bold**</code>, <code>_italic_</code>,
+                    <code>`code`</code>, <code># Heading</code>, <code>- list item</code>
+                </small>
             </div>
             <button type="submit" class="btn btn-primary">Submit Comment</button>
         </form>
     </div>
-    <div sec:authorize="!isAuthenticated()" class="mt-4 text-muted">
+    <div th:if="${!isLoggedIn}" class="mt-4 text-muted">
         <a th:href="@{/loginform}">Login</a> to post a comment.
     </div>
 </div>

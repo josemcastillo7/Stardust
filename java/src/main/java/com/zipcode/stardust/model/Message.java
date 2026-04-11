@@ -38,7 +38,7 @@ public class Message {
     @Column(nullable = false)
     private LocalDateTime sentAt;
 
-    @Column(nullable = false)
+    @Column(name = "is_read", nullable = false)
     private boolean read = false;
 
     @Column(nullable = false)
