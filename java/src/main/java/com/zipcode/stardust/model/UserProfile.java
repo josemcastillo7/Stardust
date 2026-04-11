@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 public class UserProfile {
  
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY) 
     private Long id;
  
     private String bio;
