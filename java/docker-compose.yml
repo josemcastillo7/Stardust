@@ -1,31 +1,9 @@
 services:
-  db:
-    image: mysql:8
-    ports:
-      - "7070:3306"
-    environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: stardust
-    volumes:
-      - db-data:/var/lib/mysql
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpassword"]
-      interval: 5s
-      timeout: 5s
-      retries: 20
-      start_period: 30s
-
   app:
     build: .
     ports:
       - "7071:8080"
-    depends_on:
-      db:
-        condition: service_healthy
     environment:
-      SPRING_DATASOURCE_URL: "jdbc:mysql://db:3306/stardust?allowPublicKeyRetrieval=true&useSSL=false"
-      SPRING_DATASOURCE_USERNAME: root
-      SPRING_DATASOURCE_PASSWORD: rootpassword
-
-volumes:
-  db-data:
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://xo.zipcode.rocks:9088/circus"
+      SPRING_DATASOURCE_USERNAME: sunflower_user
+      SPRING_DATASOURCE_PASSWORD: zipmusic
