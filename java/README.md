@@ -38,7 +38,7 @@ java -jar target/Stardust-0.0.1-SNAPSHOT.jar
 
 By default, the app runs on:
 
-`http://localhost:7071`
+`http://localhost:8080`
 
 ## Notes on the Port
 
@@ -58,12 +58,12 @@ By default, the app runs on:
 to run it- cd java
 mvn spring-boot:run
 
-curl -s -b cookies.txt http://localhost:7071/viewpost?post=1 | grep -o "action_react" | head -1
+curl -s -b cookies.txt http://localhost:5000/viewpost?post=1 | grep -o "action_react" | head -1
 
 curl -s -o /dev/null -w "%{http_code}" -X POST \
   -b cookies.txt -c cookies.txt \
   -d "postId=1&type=LIKE" \
-  http://localhost:7071/action_react
+  http://localhost:5000/action_react
 
 Reaction.java
 →
