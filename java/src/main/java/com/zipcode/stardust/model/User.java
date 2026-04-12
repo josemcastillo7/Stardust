@@ -38,10 +38,10 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private boolean admin = false;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "varchar(255) not null default 'ROLE_USER'")
     private String role = "ROLE_USER";          // ADDED role field
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "boolean not null default false")
     private boolean banned = false;             // ADDED banned field
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
