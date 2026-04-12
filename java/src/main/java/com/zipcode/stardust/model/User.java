@@ -38,6 +38,12 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private boolean admin = false;
 
+    @Column(nullable = false)
+    private String role = "ROLE_USER";          // ADDED role field
+
+    @Column(nullable = false)
+    private boolean banned = false;             // ADDED banned field
+
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     private List<Post> posts = new ArrayList<>();
 
@@ -50,7 +56,7 @@ public class User implements UserDetails {
         this.email = email;
         this.username = username;
         this.passwordHash = encoder.encode(rawPassword);
-        this.admin = "admin".equalsIgnoreCase(username); ///meanifull
+        this.admin = "admin".equalsIgnoreCase(username);
     }
 
     public boolean checkPassword(String rawPassword, PasswordEncoder encoder) {
@@ -60,7 +66,7 @@ public class User implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         List<GrantedAuthority> authorities = new ArrayList<>();
-        authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
+        authorities.add(new SimpleGrantedAuthority(role));  // ADD - uses role field
         if (admin) {
             authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
         }
@@ -81,7 +87,7 @@ public class User implements UserDetails {
     public boolean isAccountNonExpired() { return true; }
 
     @Override
-    public boolean isAccountNonLocked() { return true; }
+    public boolean isAccountNonLocked() { return !banned; }  // ADD - uses banned field
 
     @Override
     public boolean isCredentialsNonExpired() { return true; }
@@ -98,6 +104,15 @@ public class User implements UserDetails {
     public void setEmail(String email) { this.email = email; }
     public boolean isAdmin() { return admin; }
     public void setAdmin(boolean admin) { this.admin = admin; }
+
+    // ADD - role getters/setters
+    public String getRole() { return role; }
+    public void setRole(String role) { this.role = role; }
+
+    // ADD - banned getters/setters
+    public boolean isBanned() { return banned; }
+    public void setBanned(boolean banned) { this.banned = banned; }
+
     public List<Post> getPosts() { return posts; }
     public void setPosts(List<Post> posts) { this.posts = posts; }
     public List<Comment> getComments() { return comments; }
