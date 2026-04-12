@@ -36,10 +36,12 @@ public class CommonAttributesHelper {
         if (user != null) {
             model.addAttribute("isLoggedIn", true);
             model.addAttribute("currentUser", user.getUsername());
+            model.addAttribute("isAdmin", user.isAdmin());
             model.addAttribute("unreadCount",
                     messageRepository.countByRecipientAndReadFalseAndDeletedByRecipientFalse(user));
         } else {
             model.addAttribute("isLoggedIn", false);
+            model.addAttribute("isAdmin", false);
             model.addAttribute("unreadCount", 0L);
         }
     }

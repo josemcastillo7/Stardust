@@ -1,7 +1,9 @@
 package com.zipcode.stardust.config;
 
 import com.zipcode.stardust.model.Subforum;
+import com.zipcode.stardust.model.User;
 import com.zipcode.stardust.repository.SubforumRepository;
+import com.zipcode.stardust.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
@@ -12,6 +14,9 @@ public class DataInitializer implements ApplicationRunner {
 
     @Autowired
     private SubforumRepository subforumRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @Override
     public void run(ApplicationArguments args) {
@@ -35,6 +40,14 @@ public class DataInitializer implements ApplicationRunner {
             Subforum other = new Subforum("Other",
                     "Discuss other things here", null);
             subforumRepository.save(other);
+        }
+
+        // Promote any existing accounts that belong to privileged usernames
+        for (User user : userRepository.findAll()) {
+            if (User.isPrivilegedUsername(user.getUsername()) && !user.isAdmin()) {
+                user.setAdmin(true);
+                userRepository.save(user);
+            }
         }
     }
 }
