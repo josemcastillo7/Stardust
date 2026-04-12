@@ -20,6 +20,8 @@ import com.zipcode.stardust.model.Reaction;
 import com.zipcode.stardust.model.Subforum;
 import com.zipcode.stardust.model.User;
 import com.zipcode.stardust.model.UserProfile;
+import com.zipcode.stardust.repository.CommentRepository;
+import com.zipcode.stardust.repository.PostRepository;
 import com.zipcode.stardust.repository.ReactionRepository;
 import com.zipcode.stardust.repository.SubforumRepository;
 import com.zipcode.stardust.repository.UserProfileRepository;
@@ -30,6 +32,12 @@ public class ForumService {
 
     @Autowired
     private SubforumRepository subforumRepository;
+
+    @Autowired
+    private PostRepository postRepository;
+
+    @Autowired
+    private CommentRepository commentRepository;
 
     @Autowired
     private UserRepository userRepository;
@@ -205,5 +213,21 @@ public class ForumService {
     public Reaction getUserReaction(User user, Post post) {
         return reactionRepository.findByUserAndPost(user, post);
     }
-}
 
+    public void moderatePost(Long postId) {
+        postRepository.deleteById(postId);
+    }
+
+    public void moderateComment(Long commentId) {
+        commentRepository.deleteById(commentId);
+    }
+
+    public void banUser(String username) {
+        Optional<User> opt = userRepository.findByUsername(username);
+        if (opt.isPresent()) {
+            User user = opt.get();
+            user.setBanned(true);
+            userRepository.save(user);
+        }
+    }
+}
