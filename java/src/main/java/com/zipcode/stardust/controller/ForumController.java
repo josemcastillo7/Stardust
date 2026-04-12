@@ -13,7 +13,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.zipcode.stardust.model.Comment;
 import com.zipcode.stardust.model.Post;
@@ -218,6 +220,59 @@ public class ForumController {
     @GetMapping("/action_comment")
     public String addCommentGet(@RequestParam Long post) {
         return "redirect:/viewpost?post=" + post;
+    }
+
+    @PostMapping("/action_preview")
+    @ResponseBody
+    public String preview(@RequestBody String raw) {
+        return forumService.renderMarkdown(raw);
+    }
+
+    @GetMapping("/settings")
+    public String settingsPage(Model model, Authentication auth) {
+        User user = getCurrentUser(auth);
+        if (user == null) return "redirect:/loginform";
+        addCommonAttributes(model, auth);
+        model.addAttribute("profile", forumService.getUserProfile(user));
+        model.addAttribute("errors", new ArrayList<>());
+        model.addAttribute("success", "");
+        return "settings";
+    }
+
+    @PostMapping("/action_update_bio")
+    public String updateBio(@RequestParam String bio, Authentication auth) {
+        User user = getCurrentUser(auth);
+        if (user == null) return "redirect:/loginform";
+        forumService.updateBio(user, bio);
+        return "redirect:/settings?saved=bio";
+    }
+
+    @PostMapping("/action_update_email")
+    public String updateEmail(@RequestParam String email, Authentication auth,
+                               org.springframework.web.servlet.mvc.support.RedirectAttributes ra) {
+        User user = getCurrentUser(auth);
+        if (user == null) return "redirect:/loginform";
+        if (!forumService.updateEmail(user, email)) {
+            ra.addFlashAttribute("emailError", "Email is already in use or invalid.");
+        } else {
+            ra.addFlashAttribute("success", "Email updated.");
+        }
+        return "redirect:/settings";
+    }
+
+    @PostMapping("/action_update_password")
+    public String updatePassword(@RequestParam String currentPassword,
+                                  @RequestParam String newPassword,
+                                  Authentication auth,
+                                  org.springframework.web.servlet.mvc.support.RedirectAttributes ra) {
+        User user = getCurrentUser(auth);
+        if (user == null) return "redirect:/loginform";
+        if (!forumService.updatePassword(user, currentPassword, newPassword, passwordEncoder)) {
+            ra.addFlashAttribute("passwordError", "Current password is wrong or new password is invalid (6-40 chars, alphanumeric + !@#%&).");
+        } else {
+            ra.addFlashAttribute("success", "Password updated.");
+        }
+        return "redirect:/settings";
     }
 
     @PostMapping("/action_react")

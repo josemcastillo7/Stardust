@@ -2,6 +2,10 @@ package com.zipcode.stardust.service;
 
 import java.util.Optional;
 
+import org.commonmark.ext.autolink.AutolinkExtension;
+import org.commonmark.ext.gfm.strikethrough.StrikethroughExtension;
+import org.commonmark.ext.gfm.tables.TablesExtension;
+import org.commonmark.ext.task.list.items.TaskListItemsExtension;
 import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
@@ -37,8 +41,14 @@ public class ForumService {
     private ReactionRepository reactionRepository;
 
     // Markdown rendering pipeline — thread-safe singletons
-    private final Parser mdParser = Parser.builder().build();
-    private final HtmlRenderer mdRenderer = HtmlRenderer.builder().build();
+    private static final java.util.List<org.commonmark.Extension> MD_EXTENSIONS = java.util.List.of(
+            TablesExtension.create(),
+            StrikethroughExtension.create(),
+            TaskListItemsExtension.create(),
+            AutolinkExtension.create()
+    );
+    private final Parser mdParser = Parser.builder().extensions(MD_EXTENSIONS).build();
+    private final HtmlRenderer mdRenderer = HtmlRenderer.builder().extensions(MD_EXTENSIONS).build();
     private final PolicyFactory sanitizer = new HtmlPolicyBuilder()
             .allowElements("p", "br", "hr", "b", "strong", "em", "i", "u", "s",
                            "code", "pre", "blockquote", "ul", "ol", "li",
@@ -47,6 +57,14 @@ public class ForumService {
             .allowElements("a")
             .allowAttributes("href").onElements("a")
             .requireRelNofollowOnLinks()
+            .allowElements("img")
+            .allowAttributes("src", "alt").onElements("img")
+            // Tables (GFM)
+            .allowElements("table", "thead", "tbody", "tr", "th", "td")
+            .allowAttributes("align").onElements("th", "td")
+            // Task list checkboxes
+            .allowElements("input")
+            .allowAttributes("type", "disabled", "checked").onElements("input")
             .toFactory();
 
     public String renderMarkdown(String raw) {
@@ -118,6 +136,23 @@ public class ForumService {
         if (profile == null) profile = new UserProfile(user);
         profile.setBio(bio);
         return userProfileRepository.save(profile);
+    }
+
+    public boolean updateEmail(User user, String newEmail) {
+        if (newEmail == null || newEmail.isBlank()) return false;
+        if (emailTaken(newEmail) && !newEmail.equalsIgnoreCase(user.getEmail())) return false;
+        user.setEmail(newEmail);
+        userRepository.save(user);
+        return true;
+    }
+
+    public boolean updatePassword(User user, String currentRaw, String newRaw,
+                                   org.springframework.security.crypto.password.PasswordEncoder encoder) {
+        if (!user.checkPassword(currentRaw, encoder)) return false;
+        if (!validPassword(newRaw)) return false;
+        user.setPasswordHash(encoder.encode(newRaw));
+        userRepository.save(user);
+        return true;
     }
 
 
