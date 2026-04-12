@@ -207,3 +207,16 @@ public class ForumService {
     }
 }
 
+    public void moderatePost(Long postId) {
+        postRepository.deleteById(postId);
+    }
+
+    public void moderateComment(Long commentId) {
+        commentRepository.deleteById(commentId);
+    }
+
+    public void banUser(String username) {
+        User user = userRepository.findByUsername(username);
+        user.setBanned(true);
+        userRepository.save(user);
+    }
