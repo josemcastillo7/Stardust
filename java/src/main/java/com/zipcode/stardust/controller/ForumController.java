@@ -290,4 +290,73 @@ public class ForumController {
 
         return "redirect:/viewpost?post=" + postId + "&reacted=" + type;
     }
+
+    // ── Delete post ───────────────────────────────────────────────
+    @PostMapping("/action_delete_post")
+    public String deletePost(@RequestParam Long postId, Authentication auth) {
+        User user = getCurrentUser(auth);
+        if (user == null) return "redirect:/loginform";
+        Optional<Post> opt = postRepository.findById(postId);
+        if (opt.isEmpty()) return "redirect:/";
+        Post post = opt.get();
+        boolean isOwner = post.getUser().getUsername().equals(user.getUsername());
+        if (!isOwner && !user.isAdmin()) return "redirect:/viewpost?post=" + postId;
+        Long subId = post.getSubforum().getId();
+        forumService.moderatePost(postId);
+        return "redirect:/subforum?sub=" + subId;
+    }
+
+    // ── Delete comment ────────────────────────────────────────────
+    @PostMapping("/action_delete_comment")
+    public String deleteComment(@RequestParam Long commentId,
+                                 @RequestParam Long postId,
+                                 Authentication auth) {
+        User user = getCurrentUser(auth);
+        if (user == null) return "redirect:/loginform";
+        Optional<com.zipcode.stardust.model.Comment> opt = commentRepository.findById(commentId);
+        if (opt.isEmpty()) return "redirect:/viewpost?post=" + postId;
+        com.zipcode.stardust.model.Comment comment = opt.get();
+        boolean isOwner = comment.getUser().getUsername().equals(user.getUsername());
+        if (!isOwner && !user.isAdmin()) return "redirect:/viewpost?post=" + postId;
+        forumService.moderateComment(commentId);
+        return "redirect:/viewpost?post=" + postId;
+    }
+
+    // ── Edit post form ────────────────────────────────────────────
+    @GetMapping("/editpost")
+    public String editPostForm(@RequestParam Long postId, Model model, Authentication auth) {
+        User user = getCurrentUser(auth);
+        if (user == null) return "redirect:/loginform";
+        Optional<Post> opt = postRepository.findById(postId);
+        if (opt.isEmpty()) return "redirect:/";
+        Post post = opt.get();
+        if (!post.getUser().getUsername().equals(user.getUsername())) return "redirect:/viewpost?post=" + postId;
+        addCommonAttributes(model, auth);
+        model.addAttribute("post", post);
+        return "editpost";
+    }
+
+    // ── Save edited post ──────────────────────────────────────────
+    @PostMapping("/action_edit_post")
+    public String saveEditPost(@RequestParam Long postId,
+                                @RequestParam String title,
+                                @RequestParam String content,
+                                Authentication auth) {
+        User user = getCurrentUser(auth);
+        if (user == null) return "redirect:/loginform";
+        forumService.editPost(postId, title, content, user);
+        return "redirect:/viewpost?post=" + postId;
+    }
+
+    // ── Save edited comment ───────────────────────────────────────
+    @PostMapping("/action_edit_comment")
+    public String saveEditComment(@RequestParam Long commentId,
+                                   @RequestParam Long postId,
+                                   @RequestParam String content,
+                                   Authentication auth) {
+        User user = getCurrentUser(auth);
+        if (user == null) return "redirect:/loginform";
+        forumService.editComment(commentId, content, user);
+        return "redirect:/viewpost?post=" + postId;
+    }
 }

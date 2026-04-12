@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.HtmlUtils;
 
+import com.zipcode.stardust.model.Comment;
 import com.zipcode.stardust.model.Post;
 import com.zipcode.stardust.model.Reaction;
 import com.zipcode.stardust.model.Subforum;
@@ -220,6 +221,27 @@ public class ForumService {
 
     public void moderateComment(Long commentId) {
         commentRepository.deleteById(commentId);
+    }
+
+    public boolean editPost(Long postId, String title, String content, User requestingUser) {
+        Optional<Post> opt = postRepository.findById(postId);
+        if (opt.isEmpty()) return false;
+        Post post = opt.get();
+        if (!post.getUser().getId().equals(requestingUser.getId())) return false;
+        post.setTitle(title);
+        post.setContent(content);
+        postRepository.save(post);
+        return true;
+    }
+
+    public boolean editComment(Long commentId, String content, User requestingUser) {
+        Optional<Comment> opt = commentRepository.findById(commentId);
+        if (opt.isEmpty()) return false;
+        Comment comment = opt.get();
+        if (!comment.getUser().getId().equals(requestingUser.getId())) return false;
+        comment.setContent(content);
+        commentRepository.save(comment);
+        return true;
     }
 
     public void banUser(String username) {
