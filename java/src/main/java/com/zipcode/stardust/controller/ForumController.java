@@ -13,7 +13,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.zipcode.stardust.model.Comment;
 import com.zipcode.stardust.model.Post;
@@ -218,6 +220,12 @@ public class ForumController {
     @GetMapping("/action_comment")
     public String addCommentGet(@RequestParam Long post) {
         return "redirect:/viewpost?post=" + post;
+    }
+
+    @PostMapping("/action_preview")
+    @ResponseBody
+    public String preview(@RequestBody String raw) {
+        return forumService.renderMarkdown(raw);
     }
 
     @GetMapping("/settings")

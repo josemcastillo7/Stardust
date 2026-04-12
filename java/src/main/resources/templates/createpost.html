@@ -21,20 +21,51 @@
             <label>Content</label>
 
             <!-- TOOLBAR -->
-            <div class="mb-1">
-                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="insertMd('**','**','bold text')"><b>B</b></button>
-                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="insertMd('_','_','italic text')"><i>I</i></button>
-                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="insertMd('`','`','code')">Code</button>
-                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="insertMd('# ','','Heading')">H1</button>
-                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="insertMd('- ','','list item')">List</button>
-                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="insertMd('[','](url)','link text')">Link</button>
+            <div class="mb-1 btn-toolbar" role="toolbar">
+                <div class="btn-group mr-1">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" title="Bold" onclick="insertMd('**','**','bold text')"><b>B</b></button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" title="Italic" onclick="insertMd('_','_','italic text')"><i>I</i></button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" title="Strikethrough" onclick="insertMd('~~','~~','strikethrough')"><s>S</s></button>
+                </div>
+                <div class="btn-group mr-1">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" title="Heading 1" onclick="insertMd('# ','','Heading')">H1</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" title="Heading 2" onclick="insertMd('## ','','Heading')">H2</button>
+                </div>
+                <div class="btn-group mr-1">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" title="Inline code" onclick="insertMd('`','`','code')">Code</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" title="Code block" onclick="insertMd('```\n','\n```','code here')">&#123;&#125;</button>
+                </div>
+                <div class="btn-group mr-1">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" title="Bullet list" onclick="insertMd('- ','','list item')">&#8226; List</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" title="Task list" onclick="insertMd('- [ ] ','','task')">&#9744; Task</button>
+                </div>
+                <div class="btn-group mr-1">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" title="Link" onclick="insertMd('[','](url)','link text')">Link</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" title="Image" onclick="insertMd('![','](url)','alt text')">Img</button>
+                </div>
+                <div class="btn-group mr-1">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" title="Table" onclick="insertTable()">Table</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" title="Blockquote" onclick="insertMd('> ','','quoted text')">&#8220;&#8221;</button>
+                </div>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="togglePreview()">Preview</button>
+                </div>
             </div>
 
-            <textarea id="content" name="content" class="form-control" rows="8" required
-                      minlength="11" maxlength="4999"></textarea>
+            <div class="row mt-1">
+                <div class="col" id="editor-col">
+                    <textarea id="content" name="content" class="form-control" rows="10" required
+                              minlength="11" maxlength="4999"
+                              oninput="schedulePreview()"></textarea>
+                </div>
+                <div class="col d-none" id="preview-col">
+                    <div id="preview-box" class="border rounded p-3 bg-white"
+                         style="min-height:230px; overflow-y:auto;"></div>
+                </div>
+            </div>
             <small class="form-text text-muted mt-1">
-                Markdown supported: <code>**bold**</code>, <code>_italic_</code>,
-                <code>`code`</code>, <code># Heading</code>, <code>- list item</code>
+                Supports <strong>bold</strong>, <em>italic</em>, <s>strikethrough</s>,
+                <code>`code`</code>, <code>```blocks```</code>, tables, task lists, and bare URLs.
             </small>
         </div>
         <button type="submit" class="btn btn-primary">Post</button>
@@ -44,15 +75,51 @@
 
 <script>
 function insertMd(before, after, placeholder) {
-    const textarea = document.getElementById('content');
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const selected = textarea.value.substring(start, end);
+    const ta = document.getElementById('content');
+    const start = ta.selectionStart, end = ta.selectionEnd;
+    const selected = ta.value.substring(start, end);
     const insertion = before + (selected || placeholder) + after;
-    textarea.value = textarea.value.substring(0, start) + insertion + textarea.value.substring(end);
-    textarea.focus();
-    textarea.selectionStart = start + before.length;
-    textarea.selectionEnd = start + before.length + (selected || placeholder).length;
+    ta.value = ta.value.substring(0, start) + insertion + ta.value.substring(end);
+    ta.focus();
+    ta.selectionStart = start + before.length;
+    ta.selectionEnd   = start + before.length + (selected || placeholder).length;
+    schedulePreview();
+}
+
+function insertTable() {
+    insertMd('', '',
+        '| Header | Header |\n| --- | --- |\n| Cell | Cell |\n');
+}
+
+let previewVisible = false;
+let previewTimer = null;
+
+function togglePreview() {
+    previewVisible = !previewVisible;
+    document.getElementById('editor-col').classList.toggle('col-6', previewVisible);
+    document.getElementById('preview-col').classList.toggle('d-none', !previewVisible);
+    if (previewVisible) refreshPreview();
+}
+
+function schedulePreview() {
+    if (!previewVisible) return;
+    clearTimeout(previewTimer);
+    previewTimer = setTimeout(refreshPreview, 400);
+}
+
+function refreshPreview() {
+    const raw = document.getElementById('content').value;
+    fetch('/action_preview', {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain' },
+        body: raw
+    })
+    .then(r => r.text())
+    .then(html => {
+        const box = document.getElementById('preview-box');
+        box.innerHTML = html || '<span class="text-muted">Nothing to preview yet.</span>';
+        box.querySelectorAll('pre code').forEach(el => hljs.highlightElement(el));
+    });
 }
 </script>
 
