@@ -52,11 +52,19 @@ public class User implements UserDetails {
 
     public User() {}
 
+    private static final java.util.Set<String> ADMIN_USERNAMES = java.util.Set.of(
+            "admin", "ZoeDayz", "jumz", "Joseph", "nishat"
+    );
+
+    public static boolean isPrivilegedUsername(String username) {
+        return username != null && ADMIN_USERNAMES.contains(username);
+    }
+
     public User(String email, String username, String rawPassword, PasswordEncoder encoder) {
         this.email = email;
         this.username = username;
         this.passwordHash = encoder.encode(rawPassword);
-        this.admin = "admin".equalsIgnoreCase(username);
+        this.admin = isPrivilegedUsername(username);
     }
 
     public boolean checkPassword(String rawPassword, PasswordEncoder encoder) {
