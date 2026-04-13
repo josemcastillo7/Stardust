@@ -5,6 +5,7 @@ import com.zipcode.stardust.model.User;
 import com.zipcode.stardust.repository.MessageRepository;
 import com.zipcode.stardust.repository.UserRepository;
 import com.zipcode.stardust.service.CommonAttributesHelper;
+import com.zipcode.stardust.service.ForumService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -23,6 +24,7 @@ public class MessageController {
     @Autowired private MessageRepository messageRepository;
     @Autowired private UserRepository userRepository;
     @Autowired private CommonAttributesHelper helper;
+    @Autowired private ForumService forumService;
 
     // ── Inbox ────────────────────────────────────────────────────────────────
 
@@ -143,6 +145,7 @@ public class MessageController {
                 + "&subject=" + encodedSubject;
 
         model.addAttribute("message", message);
+        model.addAttribute("renderedBody", forumService.renderMarkdown(message.getContent()));
         model.addAttribute("replyUrl", replyUrl);
         model.addAttribute("isSender", isSender);
         return "messages/view";
