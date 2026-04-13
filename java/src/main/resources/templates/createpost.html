@@ -21,52 +21,42 @@
             <label>Content</label>
 
             <!-- TOOLBAR -->
-            <div class="mb-1 btn-toolbar" role="toolbar">
-                <div class="btn-group mr-1">
-                    <button type="button" class="btn btn-sm btn-outline-secondary" title="Bold" onclick="insertMd('**','**','bold text')"><b>B</b></button>
-                    <button type="button" class="btn btn-sm btn-outline-secondary" title="Italic" onclick="insertMd('_','_','italic text')"><i>I</i></button>
-                    <button type="button" class="btn btn-sm btn-outline-secondary" title="Strikethrough" onclick="insertMd('~~','~~','strikethrough')"><s>S</s></button>
-                </div>
-                <div class="btn-group mr-1">
-                    <button type="button" class="btn btn-sm btn-outline-secondary" title="Heading 1" onclick="insertMd('# ','','Heading')">H1</button>
-                    <button type="button" class="btn btn-sm btn-outline-secondary" title="Heading 2" onclick="insertMd('## ','','Heading')">H2</button>
-                </div>
-                <div class="btn-group mr-1">
-                    <button type="button" class="btn btn-sm btn-outline-secondary" title="Inline code" onclick="insertMd('`','`','code')">Code</button>
-                    <button type="button" class="btn btn-sm btn-outline-secondary" title="Code block" onclick="insertMd('```\n','\n```','code here')">&#123;&#125;</button>
-                </div>
-                <div class="btn-group mr-1">
-                    <button type="button" class="btn btn-sm btn-outline-secondary" title="Bullet list" onclick="insertMd('- ','','list item')">&#8226; List</button>
-                    <button type="button" class="btn btn-sm btn-outline-secondary" title="Task list" onclick="insertMd('- [ ] ','','task')">&#9744; Task</button>
-                </div>
-                <div class="btn-group mr-1">
-                    <button type="button" class="btn btn-sm btn-outline-secondary" title="Link" onclick="insertMd('[','](url)','link text')">Link</button>
-                    <button type="button" class="btn btn-sm btn-outline-secondary" title="Image" onclick="insertMd('![','](url)','alt text')">Img</button>
-                </div>
-                <div class="btn-group mr-1">
-                    <button type="button" class="btn btn-sm btn-outline-secondary" title="Table" onclick="insertTable()">Table</button>
-                    <button type="button" class="btn btn-sm btn-outline-secondary" title="Blockquote" onclick="insertMd('> ','','quoted text')">&#8220;&#8221;</button>
-                </div>
+            <input type="file" id="upload-input" class="d-none" multiple
+                   accept="image/*,video/*"/>
+            <input type="file" id="upload-folder-input" class="d-none" multiple webkitdirectory/>
+            <div class="mb-1 d-flex flex-wrap align-items-center" style="gap:4px;">
                 <div class="btn-group">
-                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="togglePreview()">Preview</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" title="Bold"
+                            onclick="insertMd('content','**','**','bold text')"><b>B</b></button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" title="Italic"
+                            onclick="insertMd('content','_','_','italic text')"><em>I</em></button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" title="Underline"
+                            onclick="insertMd('content','<u>','</u>','underlined text')"><u>U</u></button>
                 </div>
+                <select class="form-control form-control-sm" style="width:auto" title="Font Size"
+                        onchange="applySpan('content','font-size',this.value);this.selectedIndex=0;">
+                    <option value="">Size</option>
+                    <option value="0.75em" style="font-size:0.75em">Small</option>
+                    <option value="1em"    style="font-size:1em">Normal</option>
+                    <option value="1.4em"  style="font-size:1.4em">Large</option>
+                    <option value="1.8em"  style="font-size:1.8em">Huge</option>
+                </select>
+                <select class="form-control form-control-sm" style="width:auto" title="Font Style"
+                        onchange="applySpan('content','font-family',this.value);this.selectedIndex=0;">
+                    <option value="">Font</option>
+                    <option value="sans-serif" style="font-family:sans-serif">Sans-serif</option>
+                    <option value="serif"      style="font-family:serif">Serif</option>
+                    <option value="monospace"  style="font-family:monospace">Monospace</option>
+                    <option value="cursive"    style="font-family:cursive">Cursive</option>
+                </select>
+                <button type="button" class="btn btn-sm btn-outline-secondary" title="Upload files"
+                        onclick="triggerUpload('content','files')">&#128206; Files</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary" title="Upload from folder"
+                        onclick="triggerUpload('content','folder')">&#128193; Folder</button>
             </div>
 
-            <div class="row mt-1">
-                <div class="col" id="editor-col">
-                    <textarea id="content" name="content" class="form-control" rows="10" required
-                              minlength="11" maxlength="4999"
-                              oninput="schedulePreview()"></textarea>
-                </div>
-                <div class="col d-none" id="preview-col">
-                    <div id="preview-box" class="border rounded p-3 bg-white"
-                         style="min-height:230px; overflow-y:auto;"></div>
-                </div>
-            </div>
-            <small class="form-text text-muted mt-1">
-                Supports <strong>bold</strong>, <em>italic</em>, <s>strikethrough</s>,
-                <code>`code`</code>, <code>```blocks```</code>, tables, task lists, and bare URLs.
-            </small>
+            <textarea id="content" name="content" class="form-control mt-1" rows="10" required
+                      minlength="11" maxlength="4999"></textarea>
         </div>
         <button type="submit" class="btn btn-primary">Post</button>
         <a th:href="@{/subforum(sub=${subforum.id})}" class="btn btn-secondary ml-2">Cancel</a>
@@ -74,8 +64,8 @@
 </div>
 
 <script>
-function insertMd(before, after, placeholder) {
-    const ta = document.getElementById('content');
+function insertMd(taId, before, after, placeholder) {
+    const ta = document.getElementById(taId);
     const start = ta.selectionStart, end = ta.selectionEnd;
     const selected = ta.value.substring(start, end);
     const insertion = before + (selected || placeholder) + after;
@@ -83,44 +73,65 @@ function insertMd(before, after, placeholder) {
     ta.focus();
     ta.selectionStart = start + before.length;
     ta.selectionEnd   = start + before.length + (selected || placeholder).length;
-    schedulePreview();
+}
+function applySpan(taId, property, value) {
+    if (!value) return;
+    const ta = document.getElementById(taId);
+    const start = ta.selectionStart, end = ta.selectionEnd;
+    const selected = ta.value.substring(start, end) || 'text';
+    const tag = '<span style="' + property + ':' + value + '">' + selected + '</span>';
+    ta.value = ta.value.substring(0, start) + tag + ta.value.substring(end);
+    ta.focus();
 }
 
-function insertTable() {
-    insertMd('', '',
-        '| Header | Header |\n| --- | --- |\n| Cell | Cell |\n');
+const csrf      = document.querySelector('meta[name="_csrf"]')?.content;
+const csrfHdr   = document.querySelector('meta[name="_csrf_header"]')?.content;
+
+function insertAtCursor(taId, text) {
+    const ta = document.getElementById(taId);
+    const pos = ta.selectionStart;
+    ta.value = ta.value.substring(0, pos) + text + ta.value.substring(pos);
+    ta.focus();
 }
 
-let previewVisible = false;
-let previewTimer = null;
-
-function togglePreview() {
-    previewVisible = !previewVisible;
-    document.getElementById('editor-col').classList.toggle('col-6', previewVisible);
-    document.getElementById('preview-col').classList.toggle('d-none', !previewVisible);
-    if (previewVisible) refreshPreview();
+function sendUpload(taId, file) {
+    const fd = new FormData();
+    fd.append('file', file);
+    const headers = {};
+    if (csrf && csrfHdr) headers[csrfHdr] = csrf;
+    fetch('/upload', { method: 'POST', body: fd, headers })
+        .then(r => r.json())
+        .then(data => {
+            if (data.error) { alert(data.error); return; }
+            const markup = data.type === 'video'
+                ? '<video controls src="' + data.url + '"></video>\n'
+                : '![](' + data.url + ')\n';
+            insertAtCursor(taId, markup);
+        })
+        .catch(() => alert('Upload failed.'));
 }
 
-function schedulePreview() {
-    if (!previewVisible) return;
-    clearTimeout(previewTimer);
-    previewTimer = setTimeout(refreshPreview, 400);
+function triggerUpload(taId, mode) {
+    const input = document.getElementById(
+        mode === 'folder' ? 'upload-folder-input' : 'upload-input');
+    input.onchange = () => {
+        Array.from(input.files).forEach(f => sendUpload(taId, f));
+        input.value = '';
+    };
+    input.click();
 }
 
-function refreshPreview() {
-    const raw = document.getElementById('content').value;
-    fetch('/action_preview', {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain' },
-        body: raw
-    })
-    .then(r => r.text())
-    .then(html => {
-        const box = document.getElementById('preview-box');
-        box.innerHTML = html || '<span class="text-muted">Nothing to preview yet.</span>';
-        box.querySelectorAll('pre code').forEach(el => hljs.highlightElement(el));
-    });
-}
+document.getElementById('content').addEventListener('paste', function(e) {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+    for (const item of items) {
+        if (item.kind === 'file' && (item.type.startsWith('image/') || item.type.startsWith('video/'))) {
+            e.preventDefault();
+            sendUpload('content', item.getAsFile());
+            break;
+        }
+    }
+});
 </script>
 
 </body>

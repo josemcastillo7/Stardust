@@ -59,7 +59,7 @@ public class ForumController {
     }
 
     @GetMapping("/subforum")
-    public String subforum(@RequestParam Long sub, Model model, Authentication auth) {
+    public String subforum(@RequestParam long sub, Model model, Authentication auth) {
         addCommonAttributes(model, auth);
         Optional<Subforum> opt = subforumRepository.findById(sub);
         if (opt.isEmpty()) return "redirect:/";
@@ -119,7 +119,7 @@ public class ForumController {
     }
 
     @GetMapping("/addpost")
-    public String addPostForm(@RequestParam Long sub, Model model, Authentication auth) {
+    public String addPostForm(@RequestParam long sub, Model model, Authentication auth) {
         addCommonAttributes(model, auth);
         Optional<Subforum> opt = subforumRepository.findById(sub);
         if (opt.isEmpty()) return "redirect:/";
@@ -129,7 +129,7 @@ public class ForumController {
     }
 
     @PostMapping("/action_post")
-    public String createPost(@RequestParam Long sub,
+    public String createPost(@RequestParam long sub,
                               @RequestParam String title,
                               @RequestParam String content,
                               Model model, Authentication auth) {
@@ -163,7 +163,7 @@ public class ForumController {
     }
 
     @GetMapping("/viewpost")
-    public String viewPost(@RequestParam Long post, Model model, Authentication auth) {
+    public String viewPost(@RequestParam long post, Model model, Authentication auth) {
         addCommonAttributes(model, auth);
         Optional<Post> opt = postRepository.findById(post);
         if (opt.isEmpty()) return "redirect:/";
@@ -203,7 +203,7 @@ public class ForumController {
     }
 
     @PostMapping("/action_comment")
-    public String addComment(@RequestParam Long post,
+    public String addComment(@RequestParam long post,
                               @RequestParam String content,
                               Authentication auth) {
         if (auth == null || !auth.isAuthenticated()) {
@@ -218,7 +218,7 @@ public class ForumController {
     }
 
     @GetMapping("/action_comment")
-    public String addCommentGet(@RequestParam Long post) {
+    public String addCommentGet(@RequestParam long post) {
         return "redirect:/viewpost?post=" + post;
     }
 
@@ -276,7 +276,7 @@ public class ForumController {
     }
 
     @PostMapping("/action_react")
-    public String reactToPost(@RequestParam Long postId,
+    public String reactToPost(@RequestParam long postId,
                                @RequestParam String type,
                                Authentication auth) {
         if (auth == null || !auth.isAuthenticated()) {
@@ -293,7 +293,7 @@ public class ForumController {
 
     // ── Delete post ───────────────────────────────────────────────
     @PostMapping("/action_delete_post")
-    public String deletePost(@RequestParam Long postId, Authentication auth) {
+    public String deletePost(@RequestParam long postId, Authentication auth) {
         User user = getCurrentUser(auth);
         if (user == null) return "redirect:/loginform";
         Optional<Post> opt = postRepository.findById(postId);
@@ -301,21 +301,21 @@ public class ForumController {
         Post post = opt.get();
         boolean isOwner = post.getUser().getUsername().equals(user.getUsername());
         if (!isOwner && !user.isAdmin()) return "redirect:/viewpost?post=" + postId;
-        Long subId = post.getSubforum().getId();
+        long subId = post.getSubforum().getId();
         forumService.moderatePost(postId);
         return "redirect:/subforum?sub=" + subId;
     }
 
     // ── Delete comment ────────────────────────────────────────────
     @PostMapping("/action_delete_comment")
-    public String deleteComment(@RequestParam Long commentId,
-                                 @RequestParam Long postId,
+    public String deleteComment(@RequestParam long commentId,
+                                 @RequestParam long postId,
                                  Authentication auth) {
         User user = getCurrentUser(auth);
         if (user == null) return "redirect:/loginform";
-        Optional<com.zipcode.stardust.model.Comment> opt = commentRepository.findById(commentId);
+        Optional<Comment> opt = commentRepository.findById(commentId);
         if (opt.isEmpty()) return "redirect:/viewpost?post=" + postId;
-        com.zipcode.stardust.model.Comment comment = opt.get();
+        Comment comment = opt.get();
         boolean isOwner = comment.getUser().getUsername().equals(user.getUsername());
         if (!isOwner && !user.isAdmin()) return "redirect:/viewpost?post=" + postId;
         forumService.moderateComment(commentId);
@@ -324,7 +324,7 @@ public class ForumController {
 
     // ── Edit post form ────────────────────────────────────────────
     @GetMapping("/editpost")
-    public String editPostForm(@RequestParam Long postId, Model model, Authentication auth) {
+    public String editPostForm(@RequestParam long postId, Model model, Authentication auth) {
         User user = getCurrentUser(auth);
         if (user == null) return "redirect:/loginform";
         Optional<Post> opt = postRepository.findById(postId);
@@ -338,7 +338,7 @@ public class ForumController {
 
     // ── Save edited post ──────────────────────────────────────────
     @PostMapping("/action_edit_post")
-    public String saveEditPost(@RequestParam Long postId,
+    public String saveEditPost(@RequestParam long postId,
                                 @RequestParam String title,
                                 @RequestParam String content,
                                 Authentication auth) {
@@ -350,13 +350,14 @@ public class ForumController {
 
     // ── Save edited comment ───────────────────────────────────────
     @PostMapping("/action_edit_comment")
-    public String saveEditComment(@RequestParam Long commentId,
-                                   @RequestParam Long postId,
+    public String saveEditComment(@RequestParam long commentId,
+                                   @RequestParam long postId,
                                    @RequestParam String content,
                                    Authentication auth) {
         User user = getCurrentUser(auth);
         if (user == null) return "redirect:/loginform";
-        forumService.editComment(commentId, content, user);
+        boolean saved = forumService.editComment(commentId, content, user);
+        if (!saved) return "redirect:/viewpost?post=" + postId + "&editError=1";
         return "redirect:/viewpost?post=" + postId;
     }
 }
