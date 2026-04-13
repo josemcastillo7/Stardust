@@ -213,6 +213,8 @@
     <div th:if="${comments.isEmpty()}" class="text-muted">No comments yet.</div>
     <div th:if="${isLoggedIn}" class="mt-4">
         <h5>Add a Comment</h5>
+        <input type="file" id="upload-input" class="d-none"
+               accept="image/jpeg,image/png,image/gif,image/webp,image/bmp,image/avif,video/mp4,video/webm,video/ogg,video/quicktime"/>
         <form th:action="@{/action_comment(post=${post.id})}" method="post">
             <div class="form-group">
                 <div class="mb-1 d-flex flex-wrap align-items-center" style="gap:4px;">
@@ -240,6 +242,8 @@
                         <option value="monospace"  style="font-family:monospace">Monospace</option>
                         <option value="cursive"    style="font-family:cursive">Cursive</option>
                     </select>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" title="Upload image or video"
+                            onclick="triggerUpload('new-comment')">&#128206; Upload</button>
                 </div>
                 <textarea id="new-comment" name="content" class="form-control mt-1" rows="4" required
                           placeholder="Write your comment here..."></textarea>
@@ -297,6 +301,54 @@
       ta.value = ta.value.substring(0, start) + tag + ta.value.substring(end);
       ta.focus();
   }
+
+  const csrf    = document.querySelector('meta[name="_csrf"]')?.content;
+  const csrfHdr = document.querySelector('meta[name="_csrf_header"]')?.content;
+
+  function insertAtCursor(taId, text) {
+      const ta = document.getElementById(taId);
+      const pos = ta.selectionStart;
+      ta.value = ta.value.substring(0, pos) + text + ta.value.substring(pos);
+      ta.focus();
+  }
+  function sendUpload(taId, file) {
+      const fd = new FormData();
+      fd.append('file', file);
+      const headers = {};
+      if (csrf && csrfHdr) headers[csrfHdr] = csrf;
+      fetch('/upload', { method: 'POST', body: fd, headers })
+          .then(r => r.json())
+          .then(data => {
+              if (data.error) { alert(data.error); return; }
+              const markup = data.type === 'video'
+                  ? '<video controls src="' + data.url + '"></video>\n'
+                  : '![](' + data.url + ')\n';
+              insertAtCursor(taId, markup);
+          })
+          .catch(() => alert('Upload failed.'));
+  }
+  function triggerUpload(taId) {
+      const input = document.getElementById('upload-input');
+      input.onchange = () => { if (input.files[0]) sendUpload(taId, input.files[0]); input.value = ''; };
+      input.click();
+  }
+  document.addEventListener('DOMContentLoaded', () => {
+      ['new-comment'].forEach(id => {
+          const ta = document.getElementById(id);
+          if (!ta) return;
+          ta.addEventListener('paste', e => {
+              const items = e.clipboardData?.items;
+              if (!items) return;
+              for (const item of items) {
+                  if (item.kind === 'file' && item.type.startsWith('image/')) {
+                      e.preventDefault();
+                      sendUpload(id, item.getAsFile());
+                      break;
+                  }
+              }
+          });
+      });
+  });
 
   let pendingDeleteFormId = null;
 

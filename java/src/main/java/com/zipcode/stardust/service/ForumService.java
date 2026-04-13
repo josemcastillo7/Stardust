@@ -77,6 +77,9 @@ public class ForumService {
             // Inline spans for font size and font family
             .allowElements("span")
             .allowStyling()
+            // Uploaded video embeds
+            .allowElements("video")
+            .allowAttributes("src", "controls", "width", "height").onElements("video")
             .toFactory();
 
     public String renderMarkdown(String raw) {
