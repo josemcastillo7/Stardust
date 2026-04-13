@@ -9,6 +9,12 @@
       "name": "site.description",
       "type": "java.lang.String",
       "description": "A description for 'site.description'"
+    },
+    {
+      "name": "upload.dir",
+      "type": "java.lang.String",
+      "description": "Directory where user-uploaded media files are stored.",
+      "defaultValue": "uploads"
     }
   ]
 }

@@ -74,6 +74,12 @@ public class ForumService {
             // Task list checkboxes
             .allowElements("input")
             .allowAttributes("type", "disabled", "checked").onElements("input")
+            // Inline spans for font size and font family
+            .allowElements("span")
+            .allowStyling()
+            // Uploaded video embeds
+            .allowElements("video")
+            .allowAttributes("src", "controls", "width", "height").onElements("video")
             .toFactory();
 
     public String renderMarkdown(String raw) {
@@ -83,7 +89,7 @@ public class ForumService {
         return sanitizer.sanitize(html);
     }
 
-    public String generateLinkPath(Long subforumId) {
+    public String generateLinkPath(long subforumId) {
         StringBuilder sb = new StringBuilder();
         sb.append(" / <a href='/'>Forum Index</a>");
         Optional<Subforum> opt = subforumRepository.findById(subforumId);
@@ -215,15 +221,15 @@ public class ForumService {
         return reactionRepository.findByUserAndPost(user, post);
     }
 
-    public void moderatePost(Long postId) {
+    public void moderatePost(long postId) {
         postRepository.deleteById(postId);
     }
 
-    public void moderateComment(Long commentId) {
+    public void moderateComment(long commentId) {
         commentRepository.deleteById(commentId);
     }
 
-    public boolean editPost(Long postId, String title, String content, User requestingUser) {
+    public boolean editPost(long postId, String title, String content, User requestingUser) {
         Optional<Post> opt = postRepository.findById(postId);
         if (opt.isEmpty()) return false;
         Post post = opt.get();
@@ -234,7 +240,7 @@ public class ForumService {
         return true;
     }
 
-    public boolean editComment(Long commentId, String content, User requestingUser) {
+    public boolean editComment(long commentId, String content, User requestingUser) {
         Optional<Comment> opt = commentRepository.findById(commentId);
         if (opt.isEmpty()) return false;
         Comment comment = opt.get();

@@ -20,9 +20,7 @@
                 &mdash; <span th:text="${message.timeString}">time</span>
             </small>
         </div>
-        <div class="card-body">
-            <p th:text="${message.content}">Message content</p>
-        </div>
+        <div class="card-body markdown-body" th:utext="${renderedBody}">Message content</div>
     </div>
 
     <div class="d-flex">

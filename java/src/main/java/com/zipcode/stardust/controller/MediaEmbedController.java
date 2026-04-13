@@ -1,5 +1,5 @@
 package com.zipcode.stardust.controller;
- 
+
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +15,7 @@ import com.zipcode.stardust.model.Post;
 import com.zipcode.stardust.model.User;
 import com.zipcode.stardust.repository.PostRepository;
 import com.zipcode.stardust.service.MediaEmbedService;
- 
+
 /**
  * =============================================================
  *  MediaEmbedController — handles HTTP requests related to
@@ -85,7 +85,7 @@ public class MediaEmbedController {
      */
     @PostMapping("/action_add_embed")
     public String addEmbed(
-            @RequestParam("post")               Long postId,
+            @RequestParam("post")               long postId,
             @RequestParam("url")                String url,
             @RequestParam(value = "mediaType",
                           required = false)     String mediaTypeOverride,
@@ -160,8 +160,8 @@ public class MediaEmbedController {
      */
     @PostMapping("/action_delete_embed")
     public String deleteEmbed(
-            @RequestParam("embedId") Long embedId,
-            @RequestParam("post")    Long postId,
+            @RequestParam("embedId") long embedId,
+            @RequestParam("post")    long postId,
             Authentication auth,
             RedirectAttributes redirectAttrs) {
  
