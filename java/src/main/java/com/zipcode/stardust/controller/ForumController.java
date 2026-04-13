@@ -313,9 +313,10 @@ public class ForumController {
                                  Authentication auth) {
         User user = getCurrentUser(auth);
         if (user == null) return "redirect:/loginform";
-        Optional<com.zipcode.stardust.model.Comment> opt = commentRepository.findById(commentId);
+        if (commentId == null) return "redirect:/";
+        Optional<Comment> opt = commentRepository.findById(commentId);
         if (opt.isEmpty()) return "redirect:/viewpost?post=" + postId;
-        com.zipcode.stardust.model.Comment comment = opt.get();
+        Comment comment = opt.get();
         boolean isOwner = comment.getUser().getUsername().equals(user.getUsername());
         if (!isOwner && !user.isAdmin()) return "redirect:/viewpost?post=" + postId;
         forumService.moderateComment(commentId);
@@ -356,7 +357,9 @@ public class ForumController {
                                    Authentication auth) {
         User user = getCurrentUser(auth);
         if (user == null) return "redirect:/loginform";
-        forumService.editComment(commentId, content, user);
+        if (commentId == null) return "redirect:/";
+        boolean saved = forumService.editComment(commentId, content, user);
+        if (!saved) return "redirect:/viewpost?post=" + postId + "&editError=1";
         return "redirect:/viewpost?post=" + postId;
     }
 }

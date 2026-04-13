@@ -34,18 +34,19 @@ public class UploadController {
     @PostMapping("/upload")
     public ResponseEntity<?> upload(@RequestParam MultipartFile file,
                                      Authentication auth) {
-        if (auth == null || !auth.isAuthenticated()) {
+        if (auth == null || !auth.isAuthenticated()
+                || "anonymousUser".equals(auth.getPrincipal())) {
             return ResponseEntity.status(401).body(Map.of("error", "Login required."));
+        }
+
+        if (file.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "File is empty."));
         }
 
         String contentType = file.getContentType();
         if (contentType == null || !ALLOWED_TYPES.contains(contentType)) {
             return ResponseEntity.badRequest()
                     .body(Map.of("error", "Unsupported file type: " + contentType));
-        }
-
-        if (file.isEmpty()) {
-            return ResponseEntity.badRequest().body(Map.of("error", "File is empty."));
         }
 
         String ext = getExtension(file.getOriginalFilename(), contentType);
