@@ -85,7 +85,7 @@ public class MediaEmbedController {
      */
     @PostMapping("/action_add_embed")
     public String addEmbed(
-            @RequestParam("post")               Long postId,
+            @RequestParam("post")               long postId,
             @RequestParam("url")                String url,
             @RequestParam(value = "mediaType",
                           required = false)     String mediaTypeOverride,
@@ -160,8 +160,8 @@ public class MediaEmbedController {
      */
     @PostMapping("/action_delete_embed")
     public String deleteEmbed(
-            @RequestParam("embedId") Long embedId,
-            @RequestParam("post")    Long postId,
+            @RequestParam("embedId") long embedId,
+            @RequestParam("post")    long postId,
             Authentication auth,
             RedirectAttributes redirectAttrs) {
  

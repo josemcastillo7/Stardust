@@ -184,6 +184,10 @@
                         <option value="monospace"  style="font-family:monospace">Monospace</option>
                         <option value="cursive"    style="font-family:cursive">Cursive</option>
                     </select>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" title="Upload files"
+                            th:onclick="'triggerUpload(\'edit-comment-' + ${comment.id} + '\',\'files\')'">&#128206; Files</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" title="Upload from folder"
+                            th:onclick="'triggerUpload(\'edit-comment-' + ${comment.id} + '\',\'folder\')'">&#128193; Folder</button>
                 </div>
                 <textarea th:id="'edit-comment-' + ${comment.id}" name="content" class="form-control mb-1" rows="3"
                           th:text="${comment.content}" required></textarea>
@@ -213,8 +217,9 @@
     <div th:if="${comments.isEmpty()}" class="text-muted">No comments yet.</div>
     <div th:if="${isLoggedIn}" class="mt-4">
         <h5>Add a Comment</h5>
-        <input type="file" id="upload-input" class="d-none"
-               accept="image/jpeg,image/png,image/gif,image/webp,image/bmp,image/avif,video/mp4,video/webm,video/ogg,video/quicktime"/>
+        <input type="file" id="upload-input" class="d-none" multiple
+               accept="image/*,video/*"/>
+        <input type="file" id="upload-folder-input" class="d-none" multiple webkitdirectory/>
         <form th:action="@{/action_comment(post=${post.id})}" method="post">
             <div class="form-group">
                 <div class="mb-1 d-flex flex-wrap align-items-center" style="gap:4px;">
@@ -242,8 +247,10 @@
                         <option value="monospace"  style="font-family:monospace">Monospace</option>
                         <option value="cursive"    style="font-family:cursive">Cursive</option>
                     </select>
-                    <button type="button" class="btn btn-sm btn-outline-secondary" title="Upload image or video"
-                            onclick="triggerUpload('new-comment')">&#128206; Upload</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" title="Upload files"
+                            onclick="triggerUpload('new-comment','files')">&#128206; Files</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" title="Upload from folder"
+                            onclick="triggerUpload('new-comment','folder')">&#128193; Folder</button>
                 </div>
                 <textarea id="new-comment" name="content" class="form-control mt-1" rows="4" required
                           placeholder="Write your comment here..."></textarea>
@@ -327,22 +334,24 @@
           })
           .catch(() => alert('Upload failed.'));
   }
-  function triggerUpload(taId) {
-      const input = document.getElementById('upload-input');
-      input.onchange = () => { if (input.files[0]) sendUpload(taId, input.files[0]); input.value = ''; };
+  function triggerUpload(taId, mode) {
+      const input = document.getElementById(
+          mode === 'folder' ? 'upload-folder-input' : 'upload-input');
+      input.onchange = () => {
+          Array.from(input.files).forEach(f => sendUpload(taId, f));
+          input.value = '';
+      };
       input.click();
   }
   document.addEventListener('DOMContentLoaded', () => {
-      ['new-comment'].forEach(id => {
-          const ta = document.getElementById(id);
-          if (!ta) return;
+      document.querySelectorAll('textarea').forEach(ta => {
           ta.addEventListener('paste', e => {
               const items = e.clipboardData?.items;
               if (!items) return;
               for (const item of items) {
-                  if (item.kind === 'file' && item.type.startsWith('image/')) {
+                  if (item.kind === 'file' && (item.type.startsWith('image/') || item.type.startsWith('video/'))) {
                       e.preventDefault();
-                      sendUpload(id, item.getAsFile());
+                      sendUpload(ta.id, item.getAsFile());
                       break;
                   }
               }

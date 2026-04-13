@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import org.springframework.lang.NonNull;
 
 /**
  * =============================================================
@@ -127,7 +128,8 @@ public class MediaEmbedService {
      * @param embed the embed to persist
      * @return the saved embed (id is now populated)
      */
-    public MediaEmbed save(MediaEmbed embed) {
+    @NonNull
+    public MediaEmbed save(@NonNull MediaEmbed embed) {
         return mediaEmbedRepository.save(embed);
     }
  
@@ -148,7 +150,7 @@ public class MediaEmbedService {
      *
      * @param embedId the id of the embed to remove
      */
-    public void deleteEmbed(Long embedId) {
+    public void deleteEmbed(long embedId) {
         mediaEmbedRepository.deleteById(embedId);
     }
 }

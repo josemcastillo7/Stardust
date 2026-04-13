@@ -117,7 +117,7 @@ public class MessageController {
 
     @GetMapping("/messages/view")
     public String viewMessage(
-            @RequestParam Long id,
+            @RequestParam long id,
             Model model, Authentication auth) {
 
         helper.addCommonAttributes(model, auth);
@@ -155,7 +155,7 @@ public class MessageController {
 
     @PostMapping("/messages/delete")
     public String deleteMessage(
-            @RequestParam Long id,
+            @RequestParam long id,
             @RequestParam String box,
             Authentication auth) {
 

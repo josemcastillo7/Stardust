@@ -14,8 +14,9 @@
         </div>
         <div class="form-group mt-2">
             <label>Content</label>
-            <input type="file" id="upload-input" class="d-none"
-                   accept="image/jpeg,image/png,image/gif,image/webp,image/bmp,image/avif,video/mp4,video/webm,video/ogg,video/quicktime"/>
+            <input type="file" id="upload-input" class="d-none" multiple
+                   accept="image/*,video/*"/>
+            <input type="file" id="upload-folder-input" class="d-none" multiple webkitdirectory/>
             <div class="mb-1 d-flex flex-wrap align-items-center" style="gap:4px;">
                 <div class="btn-group">
                     <button type="button" class="btn btn-sm btn-outline-secondary" title="Bold"
@@ -41,8 +42,10 @@
                     <option value="monospace"  style="font-family:monospace">Monospace</option>
                     <option value="cursive"    style="font-family:cursive">Cursive</option>
                 </select>
-                <button type="button" class="btn btn-sm btn-outline-secondary" title="Upload image or video"
-                        onclick="triggerUpload('content')">&#128206; Upload</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary" title="Upload files"
+                        onclick="triggerUpload('content','files')">&#128206; Files</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary" title="Upload from folder"
+                        onclick="triggerUpload('content','folder')">&#128193; Folder</button>
             </div>
             <textarea id="content" name="content" class="form-control mt-1" rows="10" required
                       minlength="11" maxlength="4999"
@@ -101,16 +104,20 @@ function sendUpload(taId, file) {
         })
         .catch(() => alert('Upload failed.'));
 }
-function triggerUpload(taId) {
-    const input = document.getElementById('upload-input');
-    input.onchange = () => { if (input.files[0]) sendUpload(taId, input.files[0]); input.value = ''; };
+function triggerUpload(taId, mode) {
+    const input = document.getElementById(
+        mode === 'folder' ? 'upload-folder-input' : 'upload-input');
+    input.onchange = () => {
+        Array.from(input.files).forEach(f => sendUpload(taId, f));
+        input.value = '';
+    };
     input.click();
 }
 document.getElementById('content').addEventListener('paste', function(e) {
     const items = e.clipboardData?.items;
     if (!items) return;
     for (const item of items) {
-        if (item.kind === 'file' && item.type.startsWith('image/')) {
+        if (item.kind === 'file' && (item.type.startsWith('image/') || item.type.startsWith('video/'))) {
             e.preventDefault();
             sendUpload('content', item.getAsFile());
             break;

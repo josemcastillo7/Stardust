@@ -7,7 +7,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -24,12 +23,12 @@ public class UploadController {
     @Value("${upload.dir:uploads}")
     private String uploadDir;
 
-    private static final Set<String> ALLOWED_TYPES = Set.of(
-            "image/jpeg", "image/png", "image/gif", "image/webp",
-            "image/bmp", "image/svg+xml", "image/avif",
-            "video/mp4", "video/webm", "video/ogg",
-            "video/quicktime", "video/x-msvideo", "video/x-matroska"
-    );
+    /** Accept any image/* or video/* type except SVG (can carry embedded scripts). */
+    private boolean isAllowedType(String contentType) {
+        if (contentType == null) return false;
+        if ("image/svg+xml".equals(contentType)) return false;
+        return contentType.startsWith("image/") || contentType.startsWith("video/");
+    }
 
     @PostMapping("/upload")
     public ResponseEntity<?> upload(@RequestParam MultipartFile file,
@@ -43,11 +42,13 @@ public class UploadController {
             return ResponseEntity.badRequest().body(Map.of("error", "File is empty."));
         }
 
-        String contentType = file.getContentType();
-        if (contentType == null || !ALLOWED_TYPES.contains(contentType)) {
+        String rawType = file.getContentType();
+        if (!isAllowedType(rawType)) {
             return ResponseEntity.badRequest()
-                    .body(Map.of("error", "Unsupported file type: " + contentType));
+                    .body(Map.of("error", "Unsupported file type: " + rawType));
         }
+        // isAllowedType returned true, so rawType is non-null here
+        String contentType = rawType;
 
         String ext = getExtension(file.getOriginalFilename(), contentType);
         String filename = UUID.randomUUID() + ext;
