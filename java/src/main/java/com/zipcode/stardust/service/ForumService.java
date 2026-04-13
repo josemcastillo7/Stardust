@@ -74,6 +74,9 @@ public class ForumService {
             // Task list checkboxes
             .allowElements("input")
             .allowAttributes("type", "disabled", "checked").onElements("input")
+            // Inline spans for font size and font family
+            .allowElements("span")
+            .allowStyling()
             .toFactory();
 
     public String renderMarkdown(String raw) {

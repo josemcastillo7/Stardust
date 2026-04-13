@@ -27,7 +27,33 @@
         </div>
         <div class="form-group">
             <label>Message</label>
-            <textarea name="content" class="form-control" rows="8"
+            <div class="mb-1 d-flex flex-wrap align-items-center" style="gap:4px;">
+                <div class="btn-group">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" title="Bold"
+                            onclick="insertMd('msg-content','**','**','bold text')"><b>B</b></button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" title="Italic"
+                            onclick="insertMd('msg-content','_','_','italic text')"><em>I</em></button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" title="Underline"
+                            onclick="insertMd('msg-content','<u>','</u>','underlined text')"><u>U</u></button>
+                </div>
+                <select class="form-control form-control-sm" style="width:auto" title="Font Size"
+                        onchange="applySpan('msg-content','font-size',this.value);this.selectedIndex=0;">
+                    <option value="">Size</option>
+                    <option value="0.75em" style="font-size:0.75em">Small</option>
+                    <option value="1em"    style="font-size:1em">Normal</option>
+                    <option value="1.4em"  style="font-size:1.4em">Large</option>
+                    <option value="1.8em"  style="font-size:1.8em">Huge</option>
+                </select>
+                <select class="form-control form-control-sm" style="width:auto" title="Font Style"
+                        onchange="applySpan('msg-content','font-family',this.value);this.selectedIndex=0;">
+                    <option value="">Font</option>
+                    <option value="sans-serif" style="font-family:sans-serif">Sans-serif</option>
+                    <option value="serif"      style="font-family:serif">Serif</option>
+                    <option value="monospace"  style="font-family:monospace">Monospace</option>
+                    <option value="cursive"    style="font-family:cursive">Cursive</option>
+                </select>
+            </div>
+            <textarea id="msg-content" name="content" class="form-control mt-1" rows="8"
                       required maxlength="4999"
                       placeholder="Write your message here..."></textarea>
         </div>
@@ -36,5 +62,26 @@
     </form>
 
 </div>
+<script>
+function insertMd(taId, before, after, placeholder) {
+    const ta = document.getElementById(taId);
+    const start = ta.selectionStart, end = ta.selectionEnd;
+    const selected = ta.value.substring(start, end);
+    const insertion = before + (selected || placeholder) + after;
+    ta.value = ta.value.substring(0, start) + insertion + ta.value.substring(end);
+    ta.focus();
+    ta.selectionStart = start + before.length;
+    ta.selectionEnd   = start + before.length + (selected || placeholder).length;
+}
+function applySpan(taId, property, value) {
+    if (!value) return;
+    const ta = document.getElementById(taId);
+    const start = ta.selectionStart, end = ta.selectionEnd;
+    const selected = ta.value.substring(start, end) || 'text';
+    const tag = '<span style="' + property + ':' + value + '">' + selected + '</span>';
+    ta.value = ta.value.substring(0, start) + tag + ta.value.substring(end);
+    ta.focus();
+}
+</script>
 </body>
 </html>

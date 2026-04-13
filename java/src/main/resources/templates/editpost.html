@@ -14,39 +14,35 @@
         </div>
         <div class="form-group mt-2">
             <label>Content</label>
-            <div class="mb-1 btn-toolbar" role="toolbar">
-                <div class="btn-group mr-1">
-                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="insertMd('**','**','bold text')"><b>B</b></button>
-                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="insertMd('_','_','italic text')"><i>I</i></button>
-                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="insertMd('~~','~~','strikethrough')"><s>S</s></button>
-                </div>
-                <div class="btn-group mr-1">
-                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="insertMd('# ','','Heading')">H1</button>
-                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="insertMd('## ','','Heading')">H2</button>
-                </div>
-                <div class="btn-group mr-1">
-                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="insertMd('`','`','code')">Code</button>
-                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="insertMd('```\n','\n```','code here')">&#123;&#125;</button>
-                </div>
-                <div class="btn-group mr-1">
-                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="insertMd('- ','','list item')">&#8226; List</button>
-                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="insertMd('[','](url)','link text')">Link</button>
-                </div>
+            <div class="mb-1 d-flex flex-wrap align-items-center" style="gap:4px;">
                 <div class="btn-group">
-                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="togglePreview()">Preview</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" title="Bold"
+                            onclick="insertMd('content','**','**','bold text')"><b>B</b></button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" title="Italic"
+                            onclick="insertMd('content','_','_','italic text')"><em>I</em></button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" title="Underline"
+                            onclick="insertMd('content','<u>','</u>','underlined text')"><u>U</u></button>
                 </div>
+                <select class="form-control form-control-sm" style="width:auto" title="Font Size"
+                        onchange="applySpan('content','font-size',this.value);this.selectedIndex=0;">
+                    <option value="">Size</option>
+                    <option value="0.75em" style="font-size:0.75em">Small</option>
+                    <option value="1em"    style="font-size:1em">Normal</option>
+                    <option value="1.4em"  style="font-size:1.4em">Large</option>
+                    <option value="1.8em"  style="font-size:1.8em">Huge</option>
+                </select>
+                <select class="form-control form-control-sm" style="width:auto" title="Font Style"
+                        onchange="applySpan('content','font-family',this.value);this.selectedIndex=0;">
+                    <option value="">Font</option>
+                    <option value="sans-serif" style="font-family:sans-serif">Sans-serif</option>
+                    <option value="serif"      style="font-family:serif">Serif</option>
+                    <option value="monospace"  style="font-family:monospace">Monospace</option>
+                    <option value="cursive"    style="font-family:cursive">Cursive</option>
+                </select>
             </div>
-            <div class="row mt-1">
-                <div class="col" id="editor-col">
-                    <textarea id="content" name="content" class="form-control" rows="10" required
-                              minlength="11" maxlength="4999"
-                              oninput="schedulePreview()"
-                              th:text="${post.content}"></textarea>
-                </div>
-                <div class="col d-none" id="preview-col">
-                    <div id="preview-box" class="border rounded p-3 bg-white" style="min-height:230px;overflow-y:auto;"></div>
-                </div>
-            </div>
+            <textarea id="content" name="content" class="form-control mt-1" rows="10" required
+                      minlength="11" maxlength="4999"
+                      th:text="${post.content}"></textarea>
         </div>
         <div class="mt-3">
             <button type="submit" class="btn btn-primary">Save Changes</button>
@@ -56,8 +52,8 @@
 </div>
 
 <script>
-function insertMd(before, after, placeholder) {
-    const ta = document.getElementById('content');
+function insertMd(taId, before, after, placeholder) {
+    const ta = document.getElementById(taId);
     const start = ta.selectionStart, end = ta.selectionEnd;
     const selected = ta.value.substring(start, end);
     const insertion = before + (selected || placeholder) + after;
@@ -65,29 +61,15 @@ function insertMd(before, after, placeholder) {
     ta.focus();
     ta.selectionStart = start + before.length;
     ta.selectionEnd   = start + before.length + (selected || placeholder).length;
-    schedulePreview();
 }
-let previewVisible = false, previewTimer = null;
-function togglePreview() {
-    previewVisible = !previewVisible;
-    document.getElementById('editor-col').classList.toggle('col-6', previewVisible);
-    document.getElementById('preview-col').classList.toggle('d-none', !previewVisible);
-    if (previewVisible) refreshPreview();
-}
-function schedulePreview() {
-    if (!previewVisible) return;
-    clearTimeout(previewTimer);
-    previewTimer = setTimeout(refreshPreview, 400);
-}
-function refreshPreview() {
-    const raw = document.getElementById('content').value;
-    fetch('/action_preview', { method:'POST', headers:{'Content-Type':'text/plain'}, body:raw })
-        .then(r => r.text())
-        .then(html => {
-            const box = document.getElementById('preview-box');
-            box.innerHTML = html || '<span class="text-muted">Nothing to preview yet.</span>';
-            box.querySelectorAll('pre code').forEach(el => hljs.highlightElement(el));
-        });
+function applySpan(taId, property, value) {
+    if (!value) return;
+    const ta = document.getElementById(taId);
+    const start = ta.selectionStart, end = ta.selectionEnd;
+    const selected = ta.value.substring(start, end) || 'text';
+    const tag = '<span style="' + property + ':' + value + '">' + selected + '</span>';
+    ta.value = ta.value.substring(0, start) + tag + ta.value.substring(end);
+    ta.focus();
 }
 </script>
 </body>
